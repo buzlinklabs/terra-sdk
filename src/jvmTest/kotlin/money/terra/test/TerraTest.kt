@@ -1,10 +1,6 @@
 package money.terra.test
 
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
 import money.terra.Terra
 import money.terra.client.http.api.TransactionApi
 import money.terra.model.Coin
@@ -12,6 +8,10 @@ import money.terra.model.Fee
 import money.terra.transaction.TransactionBuilder
 import money.terra.transaction.message.SendMessage
 import money.terra.wallet.TerraWallet
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 
 class TerraTest {
 

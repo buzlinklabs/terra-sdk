@@ -3,6 +3,7 @@ package money.terra.test
 import kotlinx.coroutines.runBlocking
 import money.terra.bip.Mnemonic
 import money.terra.wallet.TerraWallet
+import money.terra.wallet.connect
 import org.junit.jupiter.api.Test
 
 class WalletTest {
@@ -27,11 +28,7 @@ class WalletTest {
 
     @Test
     fun testConnectWallet() {
-        val wallet = runBlocking {
-            TerraWallet.from(MNEMONIC).connect(
-                NETWORK
-            )
-        }
+        val wallet = runBlocking { TerraWallet.from(MNEMONIC).connect(NETWORK) }
 
         assert(wallet.isConnected)
         assert(wallet.accountNumber == SOJU_ACCOUNT_NUMBER)

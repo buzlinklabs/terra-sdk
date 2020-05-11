@@ -11,23 +11,20 @@ import money.terra.bip.Mnemonic
 import money.terra.client.http.TerraHttpClient
 import money.terra.hash.RIPEMD160
 
-open class TerraWallet(
-    val publicKey: ByteArray,
-    val privateKey: ByteArray
-) {
+interface TerraWallet : PublicTerraWallet {
 
     companion object {
 
-        const val ACCOUNT_PREFIX = "terra"
-        const val ACCOUNT_PUBLIC_KEY_PREFIX = "terrapub"
-        const val VALIDATOR_PREFIX = "terravaloper"
-        const val VALIDATOR_PUBLIC_KEY_PREFIX = "terravaloperpub"
-        val BECH32_PUBLIC_KEY_DATA_PREFIX = "eb5ae98721".bytes
+        internal const val ACCOUNT_PREFIX = "terra"
+        internal const val ACCOUNT_PUBLIC_KEY_PREFIX = "terrapub"
+        internal const val VALIDATOR_PREFIX = "terravaloper"
+        internal const val VALIDATOR_PUBLIC_KEY_PREFIX = "terravaloperpub"
+        internal val BECH32_PUBLIC_KEY_DATA_PREFIX = "eb5ae98721".bytes
 
-        const val COIN_TYPE = 330
-        const val OLD_COIN_TYPE = 118
+        internal const val COIN_TYPE = 330
+        internal const val OLD_COIN_TYPE = 118
 
-        private val Int.hard
+        internal val Int.hard
             get() = this or -0x80000000
 
         fun create(account: Int = 0, index: Int = 0): Pair<TerraWallet, String> {
@@ -41,26 +38,43 @@ open class TerraWallet(
             val hdPathLuna = intArrayOf(44.hard, coinType.hard, account.hard, 0, index)
             val keyPair = Bip32.keyPairFrom(seed, hdPathLuna)
 
-            return TerraWallet(keyPair.publicKey, keyPair.privateKey)
+            return TerraWalletImpl(keyPair.publicKey, keyPair.privateKey)
         }
     }
 
-    val privateKeyHex: String by lazy { privateKey.asHexString }
-    val publicKeyHex: String by lazy { publicKey.asHexString }
+    val publicKey: ByteArray
+    val privateKey: ByteArray
 
-    val address: String by lazy { accountAddress } // accountAddress alias
-    val accountAddress: String by lazy { Bech32.encode(ACCOUNT_PREFIX, baseAddress) }
-    val accountPublicKey: String by lazy {
+    val privateKeyHex: String
+    val publicKeyHex: String
+
+    val accountAddress: String
+    val accountPublicKey: String
+    val validatorAddress: String
+    val validatorPublicKey: String
+}
+
+open class TerraWalletImpl(
+    override val publicKey: ByteArray,
+    override val privateKey: ByteArray
+) : TerraWallet {
+
+    override val privateKeyHex: String by lazy { privateKey.asHexString }
+    override val publicKeyHex: String by lazy { publicKey.asHexString }
+
+    override val address: String by lazy { accountAddress } // accountAddress alias
+    override val accountAddress: String by lazy { Bech32.encode(TerraWallet.ACCOUNT_PREFIX, baseAddress) }
+    override val accountPublicKey: String by lazy {
         Bech32.encode(
-            ACCOUNT_PUBLIC_KEY_PREFIX,
-            BECH32_PUBLIC_KEY_DATA_PREFIX + publicKey.asHex
+            TerraWallet.ACCOUNT_PUBLIC_KEY_PREFIX,
+            TerraWallet.BECH32_PUBLIC_KEY_DATA_PREFIX + publicKey.asHex
         )
     }
-    val validatorAddress: String by lazy { Bech32.encode(VALIDATOR_PREFIX, baseAddress) }
-    val validatorPublicKey: String by lazy {
+    override val validatorAddress: String by lazy { Bech32.encode(TerraWallet.VALIDATOR_PREFIX, baseAddress) }
+    override val validatorPublicKey: String by lazy {
         Bech32.encode(
-            VALIDATOR_PUBLIC_KEY_PREFIX,
-            BECH32_PUBLIC_KEY_DATA_PREFIX + publicKey.asHex
+            TerraWallet.VALIDATOR_PUBLIC_KEY_PREFIX,
+            TerraWallet.BECH32_PUBLIC_KEY_DATA_PREFIX + publicKey.asHex
         )
     }
 
@@ -69,20 +83,13 @@ open class TerraWallet(
 
         Bech32.toWords(hashed)
     }
-
-    suspend fun connect(network: ProvidedNetwork) = ConnectedTerraWallet(
-        publicKey,
-        privateKey,
-        network
-    ).apply {
-        connect()
-    }
-
-    suspend fun connect(httpClient: TerraHttpClient) = ConnectedTerraWallet(
-        publicKey,
-        privateKey,
-        httpClient
-    ).apply {
-        connect()
-    }
 }
+
+@Suppress("FunctionName")
+fun TerraWallet(publicKey: ByteArray, privateKey: ByteArray) = TerraWalletImpl(publicKey, privateKey)
+
+suspend fun TerraWallet.connect(network: ProvidedNetwork) = ConnectedTerraWallet(this, network)
+    .apply { connect() }
+
+suspend fun TerraWallet.connect(httpClient: TerraHttpClient) = ConnectedTerraWallet(this, httpClient)
+    .apply { connect() }

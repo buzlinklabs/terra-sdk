@@ -6,6 +6,7 @@ import money.terra.model.Transaction
 import money.terra.model.transaction.*
 import money.terra.wallet.ConnectedTerraWallet
 import money.terra.wallet.TerraWallet
+import money.terra.wallet.connect
 
 class Terra(
     val wallet: ConnectedTerraWallet,
