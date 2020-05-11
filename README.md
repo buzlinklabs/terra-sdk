@@ -1,4 +1,4 @@
-#Terra Kotlin SDK
+# Terra Kotlin SDK
 
 ## Support platform
 * JVM
@@ -17,7 +17,7 @@
   * Block mode
 
 ## Install
-### JVM
+### JVM (Java, Kotlin, Android, ...)
 ```
 repositories {
     jcenter()
@@ -40,7 +40,7 @@ val wallet: TerraWallet = TerraWallet.create()
 ```
 ### Connect terra network using http
 ```
-val network = Network(""soju-0014"")
+val network = Network("soju-0014")
 val server = TerraServer("soju-lcd.terra.dev", network)
 
 or 

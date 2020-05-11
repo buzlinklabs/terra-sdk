@@ -1,9 +1,17 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.util.Date
+
 plugins {
     kotlin("multiplatform") version "1.3.72"
+    `maven-publish`
+    id("com.jfrog.bintray") version "1.8.4"
 }
 
-group = "money.terra"
-version = "0.0.1"
+val artifactName = "terra-sdk"
+val artifactGroup = "money.terra"
+val artifactVersion = "0.0.1"
+group = artifactGroup
+version = artifactVersion
 
 repositories {
     mavenCentral()
@@ -12,8 +20,16 @@ repositories {
 }
 
 kotlin {
+    metadata {
+        mavenPublication {
+            artifactId = "$artifactName-common"
+        }
+    }
     jvm {
         withJava()
+        mavenPublication {
+            artifactId = artifactName
+        }
     }
 
     sourceSets {
@@ -49,6 +65,12 @@ kotlin {
 
                 implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3")
             }
+
+            tasks.withType<KotlinCompile> {
+                val jvmTarget: String by project
+
+                kotlinOptions.jvmTarget = jvmTarget
+            }
         }
         val jvmTest by getting {
             dependencies {
@@ -59,6 +81,27 @@ kotlin {
             tasks.withType<Test> {
                 useJUnitPlatform()
             }
+        }
+    }
+}
+
+bintray {
+    user = System.getenv("BINTRAY_USER")
+    key = System.getenv("BINTRAY_KEY")
+
+    publish = true
+
+    setPublications("jvm", "metadata")
+
+    pkg.apply {
+        repo = "maven"
+        name = "terra-sdk"
+        setLicenses("MIT")
+        setLabels("kotlin")
+        vcsUrl = "https://github.com/jdekim43/common-util.git"
+        version.apply {
+            name = artifactVersion
+            released = Date().toString()
         }
     }
 }

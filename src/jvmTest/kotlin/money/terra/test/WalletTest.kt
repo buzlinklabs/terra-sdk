@@ -2,8 +2,8 @@ package money.terra.test
 
 import kotlinx.coroutines.runBlocking
 import money.terra.bip.Mnemonic
-import org.junit.jupiter.api.Test
 import money.terra.wallet.TerraWallet
+import org.junit.jupiter.api.Test
 
 class WalletTest {
 
