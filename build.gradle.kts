@@ -94,11 +94,12 @@ bintray {
     setPublications("jvm", "metadata")
 
     pkg.apply {
+        userOrg = "terra-money"
         repo = "maven"
         name = "terra-sdk"
-        setLicenses("MIT")
+        setLicenses("Apache2.0")
         setLabels("kotlin")
-        vcsUrl = "https://github.com/jdekim43/common-util.git"
+        vcsUrl = "https://github.com/buzlinklabs/terra-sdk.git"
         version.apply {
             name = artifactVersion
             released = Date().toString()
