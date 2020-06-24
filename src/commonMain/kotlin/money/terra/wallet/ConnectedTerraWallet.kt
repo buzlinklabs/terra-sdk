@@ -8,7 +8,7 @@ import money.terra.transaction.message.Message
 
 class ConnectedTerraWallet(
     private val wallet: TerraWallet,
-    private val httpClient: TerraHttpClient
+    httpClient: TerraHttpClient
 ) : ConnectedPublicTerraWallet(wallet, httpClient), TerraWallet by wallet {
 
     override val address: String

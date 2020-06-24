@@ -11,7 +11,7 @@ class BroadcastTransactionSyncResult(
     override val txhash: String,
     override val code: Int?,
     val rawLog: String,
-    val logs: List<BroadcastTransactionLog>
+    val logs: List<BroadcastTransactionLog>?
 ) : BroadcastTransactionResult
 
 class BroadcastTransactionAsyncResult(
@@ -25,7 +25,7 @@ class BroadcastTransactionBlockResult(
     override val txhash: String,
     override val code: Int?,
     val rawLog: String,
-    val logs: List<BroadcastTransactionLog>,
+    val logs: List<BroadcastTransactionLog>?,
     val gasUsed: String,
     val gasWanted: String?,
     val events: List<BroadcastTransactionEvent>?

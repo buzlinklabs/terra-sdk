@@ -9,7 +9,9 @@
 * Get account info
 * Get account balance
 * Create transaction
-  * Send coins
+  * Send coins (bank/MsgSend)
+  * Instantiate contract (wasm/InstantiateContract)
+  * Execute contract (wasm/ExecuteContract)
 * Sign transaction
 * Broadcast transaction
   * Async mode

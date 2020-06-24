@@ -9,28 +9,29 @@ import money.terra.wallet.TerraWallet
 import money.terra.wallet.connect
 
 class Terra(
-    val wallet: ConnectedTerraWallet,
-    val httpClient: TerraHttpClient
+    val wallet: ConnectedTerraWallet
 ) {
 
     companion object {
 
         suspend fun connect(wallet: TerraWallet, network: Network, server: TerraServer): Terra {
-            val liteClient = TerraHttpClient(network, server)
-
-            return Terra(wallet.connect(liteClient), liteClient)
+            return connect(wallet, TerraHttpClient(network, server))
         }
 
         suspend fun connect(wallet: TerraWallet, network: ProvidedNetwork): Terra {
-            val liteClient = TerraHttpClient(network)
+            return connect(wallet, TerraHttpClient(network))
+        }
 
-            return Terra(wallet.connect(liteClient), liteClient)
+        suspend fun connect(wallet: TerraWallet, liteClient: TerraHttpClient): Terra {
+            return Terra(wallet.connect(liteClient))
         }
     }
 
+    private val httpClient = wallet.httpClient
+
     private val transactionApi = httpClient.transaction()
 
-    suspend fun broadcast(transaction: Transaction<*>) = broadcastAsync(transaction)
+    suspend fun broadcast(transaction: Transaction<*>) = broadcastSync(transaction)
 
     suspend fun broadcastSync(transaction: Transaction<*>): BroadcastTransactionSyncResult {
         val signedTransaction = if (transaction.isSigned) transaction else wallet.sign(transaction).first

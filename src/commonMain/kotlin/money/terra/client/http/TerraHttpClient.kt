@@ -17,6 +17,9 @@ import money.terra.client.TerraServer
 import money.terra.client.http.api.AuthApi
 import money.terra.client.http.api.BankApi
 import money.terra.client.http.api.TransactionApi
+import money.terra.wallet.PublicTerraWallet
+import money.terra.wallet.TerraWallet
+import money.terra.wallet.connect
 
 internal expect val ENGINE_FACTORY: EngineFactory<HttpClientEngineConfig>
 
@@ -75,6 +78,10 @@ class TerraHttpClient(
 
         this.body = body
     }
+
+    suspend fun wallet(address: String) = PublicTerraWallet(address).connect(this)
+
+    suspend fun wallet(publicKey: ByteArray, privateKey: ByteArray) = TerraWallet(publicKey, privateKey).connect(this)
 
     fun auth() = AuthApi(this)
 
