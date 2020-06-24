@@ -4,7 +4,7 @@ import money.terra.transaction.message.Message
 
 data class Transaction<T : Message>(
     val msg: List<TypeWrapper<T>>,
-    val fee: Fee,
+    val fee: Fee? = null,
     val memo: String = "",
     val signatures: List<Signature>? = null
 ) {

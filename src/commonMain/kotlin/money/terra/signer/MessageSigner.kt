@@ -26,6 +26,10 @@ class MessageSigner(
     }
 
     fun <T : Message> sign(transaction: Transaction<T>, sequence: String): Transaction<T> {
+        if (transaction.fee == null) {
+            throw IllegalArgumentException("non-null field fee")
+        }
+
         val signMessage = SignMessage(
             sequence,
             wallet.accountNumber,

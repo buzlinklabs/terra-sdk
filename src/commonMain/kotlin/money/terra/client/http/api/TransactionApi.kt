@@ -24,7 +24,7 @@ class TransactionApi(
         return client.post("/txs", body)
     }
 
-//    @Deprecated("not tested")
-//    @POST("txs/estimate_fee")
-//    suspend fun estimateFeeAndGas(@Body body: EstimateRequest): EstimateFeeResult
+    suspend fun estimateFeeAndGas(body: EstimateFeeRequest): EstimateFeeResult {
+        return client.post("/txs/estimate_fee", body)
+    }
 }

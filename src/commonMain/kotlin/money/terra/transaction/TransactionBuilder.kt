@@ -11,7 +11,7 @@ class TransactionBuilder {
     var memo: String = ""
     var messages: MutableList<Message> = mutableListOf()
 
-    fun build() = Transaction(messages.map { it.wrapper() }, fee!!, memo)
+    fun build() = Transaction(messages.map { it.wrapper() }, fee, memo)
 
     fun Message.addThis() = messages.add(this)
 }

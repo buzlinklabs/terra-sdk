@@ -46,12 +46,9 @@ class TerraTest {
     inner class SendCoinTest : BaseBroadcastTest(terra) {
 
         val coins = listOf(Coin("uluna", "100000"))
-        val fee = Fee("200000", listOf(Coin("uluna", "50")))
 
         override fun TransactionBuilder.setup() {
-            fee = this@SendCoinTest.fee
-
-            SendMessage(ADDRESS, TEST_ADDRESS, coins).addThis()
+            SendMessage(terra.wallet.address, TEST_ADDRESS, coins).addThis()
         }
     }
 
@@ -60,10 +57,8 @@ class TerraTest {
     inner class InstantiateContractTest : BaseBroadcastTest(terra) {
 
         val coins = listOf(Coin("uluna", "100000"))
-        val fee = Fee("200000", listOf(Coin("uluna", "50")))
 
         override fun TransactionBuilder.setup() {
-            fee = this@InstantiateContractTest.fee
 
             InstantiateContract(terra.wallet.address, "1", "e30=", coins).addThis()
         }
@@ -73,11 +68,7 @@ class TerraTest {
     @DisplayName("Contract 실행")
     inner class ExecuteContractTest : BaseBroadcastTest(terra) {
 
-        val fee = Fee("200000", listOf(Coin("uluna", "50")))
-
         override fun TransactionBuilder.setup() {
-            fee = this@ExecuteContractTest.fee
-
             val msgObj = mapOf(
                 "create_campaign" to mapOf(
                     "campaign_id" to "c1",

@@ -1,10 +1,10 @@
 package money.terra.model.transaction
 
-import money.terra.model.DecCoin
+import money.terra.model.Coin
 import money.terra.model.Transaction
 
-data class EstimateRequest(
+data class EstimateFeeRequest(
     val tx: Transaction<*>,
     val gasAdjustment: String,
-    val gasPrices: List<DecCoin>
+    val gasPrices: List<Coin>
 )

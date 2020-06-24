@@ -2,6 +2,7 @@ package money.terra
 
 import money.terra.client.TerraServer
 import money.terra.client.http.TerraHttpClient
+import money.terra.model.Coin
 import money.terra.model.Transaction
 import money.terra.model.transaction.*
 import money.terra.wallet.ConnectedTerraWallet
@@ -34,23 +35,40 @@ class Terra(
     suspend fun broadcast(transaction: Transaction<*>) = broadcastSync(transaction)
 
     suspend fun broadcastSync(transaction: Transaction<*>): BroadcastTransactionSyncResult {
-        val signedTransaction = if (transaction.isSigned) transaction else wallet.sign(transaction).first
-        val broadcastRequest = BroadcastTransactionSyncRequest(signedTransaction)
+        val broadcastRequest = BroadcastTransactionSyncRequest(transaction.polish())
 
         return transactionApi.broadcastSignedTransaction(broadcastRequest)
     }
 
     suspend fun broadcastAsync(transaction: Transaction<*>): BroadcastTransactionAsyncResult {
-        val signedTransaction = if (transaction.isSigned) transaction else wallet.sign(transaction).first
-        val broadcastRequest = BroadcastTransactionAsyncRequest(signedTransaction)
+        val broadcastRequest = BroadcastTransactionAsyncRequest(transaction.polish())
 
         return transactionApi.broadcastSignedTransaction(broadcastRequest)
     }
 
     suspend fun broadcastBlock(transaction: Transaction<*>): BroadcastTransactionBlockResult {
-        val signedTransaction = if (transaction.isSigned) transaction else wallet.sign(transaction).first
-        val broadcastRequest = BroadcastTransactionBlockRequest(signedTransaction)
+        val broadcastRequest = BroadcastTransactionBlockRequest(transaction.polish())
 
         return transactionApi.broadcastSignedTransaction(broadcastRequest)
+    }
+
+    suspend fun estimateFee(
+        transaction: Transaction<*>,
+        gasAdjustment: String = "1.4",
+        gasPrices: List<Coin> = listOf(Coin("uluna", "50"))
+    ): EstimateFeeResult {
+        val request = EstimateFeeRequest(transaction, gasAdjustment, gasPrices)
+
+        return transactionApi.estimateFeeAndGas(request)
+    }
+
+    private suspend fun Transaction<*>.polish(): Transaction<*> {
+        if (fee == null) {
+            val transaction = copy(fee = estimateFee(this).result.asFee)
+
+            return wallet.sign(transaction).first
+        }
+
+        return if (isSigned) this else wallet.sign(this).first
     }
 }
