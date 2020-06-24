@@ -1,9 +1,12 @@
 package money.terra
 
+import io.ktor.client.features.ClientRequestException
+import kotlinx.coroutines.delay
 import money.terra.client.TerraServer
 import money.terra.client.http.TerraHttpClient
 import money.terra.model.Coin
 import money.terra.model.Transaction
+import money.terra.model.TransactionQueryResult
 import money.terra.model.transaction.*
 import money.terra.wallet.ConnectedTerraWallet
 import money.terra.wallet.TerraWallet
@@ -60,6 +63,20 @@ class Terra(
         val request = EstimateFeeRequest(transaction, gasAdjustment, gasPrices)
 
         return transactionApi.estimateFeeAndGas(request)
+    }
+
+    suspend fun getTransaction(transactionHash: String): TransactionQueryResult {
+        return transactionApi.getByHash(transactionHash)
+    }
+
+    suspend fun wait(transactionHash: String, intervalMillis: Long = 1000): TransactionQueryResult {
+        while (true) {
+            try {
+                return transactionApi.getByHash(transactionHash)
+            } catch (e: ClientRequestException) {
+                delay(intervalMillis)
+            }
+        }
     }
 
     private suspend fun Transaction<*>.polish(): Transaction<*> {
