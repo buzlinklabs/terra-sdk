@@ -29,28 +29,37 @@ class Terra(
         suspend fun connect(wallet: TerraWallet, liteClient: TerraHttpClient): Terra {
             return Terra(wallet.connect(liteClient))
         }
+
+        val DEFAULT_GAS_PRICES = listOf(Coin("uluna", "50"))
     }
 
     private val httpClient = wallet.httpClient
 
     private val transactionApi = httpClient.transaction()
 
-    suspend fun broadcast(transaction: Transaction<*>) = broadcastSync(transaction)
-
-    suspend fun broadcastSync(transaction: Transaction<*>): BroadcastTransactionSyncResult {
-        val broadcastRequest = BroadcastTransactionSyncRequest(transaction.polish())
-
-        return transactionApi.broadcastSignedTransaction(broadcastRequest)
-    }
-
-    suspend fun broadcastAsync(transaction: Transaction<*>): BroadcastTransactionAsyncResult {
-        val broadcastRequest = BroadcastTransactionAsyncRequest(transaction.polish())
+    suspend fun broadcastSync(
+        gasPrices: List<Coin> = DEFAULT_GAS_PRICES,
+        transaction: Transaction<*>
+    ): BroadcastTransactionSyncResult {
+        val broadcastRequest = BroadcastTransactionSyncRequest(transaction.polish(gasPrices))
 
         return transactionApi.broadcastSignedTransaction(broadcastRequest)
     }
 
-    suspend fun broadcastBlock(transaction: Transaction<*>): BroadcastTransactionBlockResult {
-        val broadcastRequest = BroadcastTransactionBlockRequest(transaction.polish())
+    suspend fun broadcastAsync(
+        gasPrices: List<Coin> = DEFAULT_GAS_PRICES,
+        transaction: Transaction<*>
+    ): BroadcastTransactionAsyncResult {
+        val broadcastRequest = BroadcastTransactionAsyncRequest(transaction.polish(gasPrices))
+
+        return transactionApi.broadcastSignedTransaction(broadcastRequest)
+    }
+
+    suspend fun broadcastBlock(
+        gasPrices: List<Coin> = DEFAULT_GAS_PRICES,
+        transaction: Transaction<*>
+    ): BroadcastTransactionBlockResult {
+        val broadcastRequest = BroadcastTransactionBlockRequest(transaction.polish(gasPrices))
 
         return transactionApi.broadcastSignedTransaction(broadcastRequest)
     }
@@ -79,9 +88,9 @@ class Terra(
         }
     }
 
-    private suspend fun Transaction<*>.polish(): Transaction<*> {
+    private suspend fun Transaction<*>.polish(gasPrices: List<Coin>): Transaction<*> {
         if (fee == null) {
-            val transaction = copy(fee = estimateFee(this).asFee)
+            val transaction = copy(fee = estimateFee(this, gasPrices = gasPrices).asFee)
 
             return wallet.sign(transaction).first
         }

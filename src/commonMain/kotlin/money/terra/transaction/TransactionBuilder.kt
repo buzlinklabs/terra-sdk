@@ -1,6 +1,7 @@
 package money.terra.transaction
 
 import money.terra.Terra
+import money.terra.model.Coin
 import money.terra.model.Fee
 import money.terra.model.Transaction
 import money.terra.transaction.message.Message
@@ -16,18 +17,23 @@ class TransactionBuilder {
     fun Message.addThis() = messages.add(this)
 }
 
-suspend inline fun Terra.broadcast(block: TransactionBuilder.() -> Unit) = TransactionBuilder()
+suspend inline fun Terra.broadcastSync(
+    gasPrices: List<Coin> = Terra.DEFAULT_GAS_PRICES,
+    block: TransactionBuilder.() -> Unit
+) = TransactionBuilder()
     .apply { block() }
-    .let { broadcast(it.build()) }
+    .let { broadcastSync(gasPrices, it.build()) }
 
-suspend inline fun Terra.broadcastSync(block: TransactionBuilder.() -> Unit) = TransactionBuilder()
+suspend inline fun Terra.broadcastAsync(
+    gasPrices: List<Coin> = Terra.DEFAULT_GAS_PRICES,
+    block: TransactionBuilder.() -> Unit
+) = TransactionBuilder()
     .apply { block() }
-    .let { broadcastSync(it.build()) }
+    .let { broadcastAsync(gasPrices, it.build()) }
 
-suspend inline fun Terra.broadcastAsync(block: TransactionBuilder.() -> Unit) = TransactionBuilder()
+suspend inline fun Terra.broadcastBlock(
+    gasPrices: List<Coin> = Terra.DEFAULT_GAS_PRICES,
+    block: TransactionBuilder.() -> Unit
+) = TransactionBuilder()
     .apply { block() }
-    .let { broadcastAsync(it.build()) }
-
-suspend inline fun Terra.broadcastBlock(block: TransactionBuilder.() -> Unit) = TransactionBuilder()
-    .apply { block() }
-    .let { broadcastBlock(it.build()) }
+    .let { broadcastBlock(gasPrices, it.build()) }
