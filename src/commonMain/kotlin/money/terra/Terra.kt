@@ -38,8 +38,8 @@ class Terra(
     private val transactionApi = httpClient.transaction()
 
     suspend fun broadcastSync(
-        gasPrices: List<Coin> = DEFAULT_GAS_PRICES,
-        transaction: Transaction<*>
+        transaction: Transaction<*>,
+        gasPrices: List<Coin> = DEFAULT_GAS_PRICES
     ): BroadcastTransactionSyncResult {
         val broadcastRequest = BroadcastTransactionSyncRequest(transaction.polish(gasPrices))
 
@@ -47,8 +47,8 @@ class Terra(
     }
 
     suspend fun broadcastAsync(
-        gasPrices: List<Coin> = DEFAULT_GAS_PRICES,
-        transaction: Transaction<*>
+        transaction: Transaction<*>,
+        gasPrices: List<Coin> = DEFAULT_GAS_PRICES
     ): BroadcastTransactionAsyncResult {
         val broadcastRequest = BroadcastTransactionAsyncRequest(transaction.polish(gasPrices))
 
@@ -56,8 +56,8 @@ class Terra(
     }
 
     suspend fun broadcastBlock(
-        gasPrices: List<Coin> = DEFAULT_GAS_PRICES,
-        transaction: Transaction<*>
+        transaction: Transaction<*>,
+        gasPrices: List<Coin> = DEFAULT_GAS_PRICES
     ): BroadcastTransactionBlockResult {
         val broadcastRequest = BroadcastTransactionBlockRequest(transaction.polish(gasPrices))
 

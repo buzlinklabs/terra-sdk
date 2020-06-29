@@ -22,18 +22,18 @@ suspend inline fun Terra.broadcastSync(
     block: TransactionBuilder.() -> Unit
 ) = TransactionBuilder()
     .apply { block() }
-    .let { broadcastSync(gasPrices, it.build()) }
+    .let { broadcastSync(it.build(), gasPrices) }
 
 suspend inline fun Terra.broadcastAsync(
     gasPrices: List<Coin> = Terra.DEFAULT_GAS_PRICES,
     block: TransactionBuilder.() -> Unit
 ) = TransactionBuilder()
     .apply { block() }
-    .let { broadcastAsync(gasPrices, it.build()) }
+    .let { broadcastAsync(it.build(), gasPrices) }
 
 suspend inline fun Terra.broadcastBlock(
     gasPrices: List<Coin> = Terra.DEFAULT_GAS_PRICES,
     block: TransactionBuilder.() -> Unit
 ) = TransactionBuilder()
     .apply { block() }
-    .let { broadcastBlock(gasPrices, it.build()) }
+    .let { broadcastBlock(it.build(), gasPrices) }
