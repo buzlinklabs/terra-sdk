@@ -2,8 +2,10 @@ package money.terra.test
 
 import kotlinx.coroutines.runBlocking
 import kr.jadekim.common.util.encoder.asBase64String
-import money.terra.ProvidedNetwork
+import money.terra.Network
 import money.terra.Terra
+import money.terra.client.TerraServer
+import money.terra.client.http.TerraHttpClient
 import money.terra.client.http.api.TransactionApi
 import money.terra.model.Coin
 import money.terra.model.Fee
@@ -28,7 +30,12 @@ class TerraTest {
         @BeforeAll
         @JvmStatic
         fun init() {
-            terra = runBlocking { Terra.connect(TerraWallet.from(MNEMONIC), ProvidedNetwork.SOJU_0014) }
+            val network = Network("felix")
+            val server = TerraServer("public.node1.terra.buzlink.co:8081", network)
+            val client = TerraHttpClient(network, server, protocol = "http")
+            val mnemonic =
+                "hen purity urge file other antique belt know unknown hospital horn enrich puppy seek design resemble dismiss edge what guard foam energy document series"
+            terra = runBlocking { Terra.connect(TerraWallet.from(mnemonic), client) }
             transactionApi = terra.wallet.httpClient.transaction()
         }
     }

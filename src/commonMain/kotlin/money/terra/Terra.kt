@@ -59,10 +59,10 @@ class Terra(
         transaction: Transaction<*>,
         gasAdjustment: String = "1.4",
         gasPrices: List<Coin> = listOf(Coin("uluna", "50"))
-    ): EstimateFeeResult {
+    ): EstimateFee {
         val request = EstimateFeeRequest(transaction, gasAdjustment, gasPrices)
 
-        return transactionApi.estimateFeeAndGas(request)
+        return transactionApi.estimateFeeAndGas(request).result
     }
 
     suspend fun getTransaction(transactionHash: String): TransactionQueryResult {
@@ -81,7 +81,7 @@ class Terra(
 
     private suspend fun Transaction<*>.polish(): Transaction<*> {
         if (fee == null) {
-            val transaction = copy(fee = estimateFee(this).result.asFee)
+            val transaction = copy(fee = estimateFee(this).asFee)
 
             return wallet.sign(transaction).first
         }

@@ -9,7 +9,7 @@ plugins {
 
 val artifactName = "terra-sdk"
 val artifactGroup = "money.terra"
-val artifactVersion = "0.1.2"
+val artifactVersion = "0.1.7"
 group = artifactGroup
 version = artifactVersion
 
@@ -43,6 +43,7 @@ kotlin {
 
                 implementation("io.ktor:ktor-client-core:$ktorClientVersion")
                 implementation("io.ktor:ktor-client-json:$ktorClientVersion")
+                implementation("io.ktor:ktor-client-logging:$ktorClientVersion")
             }
         }
         val commonTest by getting {
@@ -62,6 +63,7 @@ kotlin {
                 implementation("io.ktor:ktor-client-okhttp:$ktorClientVersion")
                 implementation("io.ktor:ktor-client-json-jvm:$ktorClientVersion")
                 implementation("io.ktor:ktor-client-jackson:$ktorClientVersion")
+                implementation("io.ktor:ktor-client-logging-jvm:$ktorClientVersion")
 
                 implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3")
             }

@@ -1,6 +1,7 @@
 package money.terra.client.http.api
 
 import money.terra.client.http.TerraHttpClient
+import money.terra.model.ResultWrapper
 import money.terra.model.TransactionQueryResult
 import money.terra.model.transaction.*
 
@@ -24,7 +25,7 @@ class TransactionApi(
         return client.post("/txs", body)
     }
 
-    suspend fun estimateFeeAndGas(body: EstimateFeeRequest): EstimateFeeResult {
+    suspend fun estimateFeeAndGas(body: EstimateFeeRequest): ResultWrapper<EstimateFee> {
         return client.post("/txs/estimate_fee", body)
     }
 }

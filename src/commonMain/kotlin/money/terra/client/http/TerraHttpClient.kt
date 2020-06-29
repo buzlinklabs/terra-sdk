@@ -6,6 +6,10 @@ import io.ktor.client.engine.HttpClientEngineFactory
 import io.ktor.client.features.HttpTimeout
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.JsonSerializer
+import io.ktor.client.features.logging.DEFAULT
+import io.ktor.client.features.logging.LogLevel
+import io.ktor.client.features.logging.Logger
+import io.ktor.client.features.logging.Logging
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.http.ContentType
@@ -17,6 +21,7 @@ import money.terra.client.TerraServer
 import money.terra.client.http.api.AuthApi
 import money.terra.client.http.api.BankApi
 import money.terra.client.http.api.TransactionApi
+import money.terra.client.http.api.WasmApi
 import money.terra.wallet.PublicTerraWallet
 import money.terra.wallet.TerraWallet
 import money.terra.wallet.connect
@@ -48,6 +53,11 @@ class TerraHttpClient(
 
         install(HttpTimeout) {
             requestTimeoutMillis = timeoutMillis
+        }
+
+        install(Logging) {
+            logger = Logger.DEFAULT
+            level = LogLevel.ALL
         }
     }
 
@@ -88,4 +98,6 @@ class TerraHttpClient(
     fun bank() = BankApi(this)
 
     fun transaction() = TransactionApi(this)
+
+    fun wasm() = WasmApi(this)
 }
