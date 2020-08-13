@@ -21,11 +21,11 @@ data class InstantiateContract(
     val codeId: String,
     val initMsg: String,
     val initCoins: List<Coin>
-) : Message("wasm/InstantiateContract")
+) : Message("wasm/MsgInstantiateContract")
 
 data class ExecuteContract(
     val sender: String,
     val contract: String,
     val msg: String,
     val coins: List<Coin>
-) : Message("wasm/ExecuteContract")
+) : Message("wasm/MsgExecuteContract")
