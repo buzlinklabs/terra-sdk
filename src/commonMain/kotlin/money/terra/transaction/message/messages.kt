@@ -17,15 +17,16 @@ data class SendMessage(
 ) : Message("bank/MsgSend")
 
 data class InstantiateContract(
-    val sender: String,
+    val owner: String,
     val codeId: String,
     val initMsg: String,
-    val initCoins: List<Coin>
+    val initCoins: List<Coin>,
+    val migratable: Boolean
 ) : Message("wasm/MsgInstantiateContract")
 
 data class ExecuteContract(
     val sender: String,
     val contract: String,
-    val msg: String,
+    val executeMsg: String,
     val coins: List<Coin>
 ) : Message("wasm/MsgExecuteContract")
