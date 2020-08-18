@@ -6,14 +6,14 @@ import money.terra.util.asUrlEncode
 import money.terra.util.toJson
 
 class WasmApi(
-    private val client: TerraHttpClient
+    val client: TerraHttpClient
 ) {
 
-    suspend fun getStoredData(contractAddress: String, query: Any): ResultWrapper<String> {
+    suspend inline fun <T> getStoredData(contractAddress: String, query: Any): ResultWrapper<T> {
         return getStoredData(contractAddress, query.toJson().asUrlEncode)
     }
 
-    suspend fun getStoredData(contractAddress: String, queryMessage: String): ResultWrapper<String> {
-        return client.get("/wasm/contract/$contractAddress/store", mapOf("query_msg" to queryMessage))
+    suspend inline fun <T> getStoredData(contractAddress: String, queryMessage: String): ResultWrapper<T> {
+        return client.get("/wasm/contracts/$contractAddress/store", mapOf("query_msg" to queryMessage))
     }
 }

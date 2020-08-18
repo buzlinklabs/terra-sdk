@@ -42,9 +42,9 @@ class TerraHttpClient(
     val protocol: String = "https"
 ) {
 
-    internal val baseUrl: String = "$protocol://${server.host}"
+    val baseUrl: String = "$protocol://${server.host}"
 
-    private val client = HttpClient(ENGINE_FACTORY.engine) {
+    val lcdServer = HttpClient(ENGINE_FACTORY.engine) {
         engine(ENGINE_FACTORY.configure)
 
         install(JsonFeature) {
@@ -67,7 +67,7 @@ class TerraHttpClient(
         protocol: String = "https"
     ) : this(network, ProvidedTerraServer.of(network), timeoutMillis, protocol)
 
-    internal suspend inline fun <reified T> get(
+    suspend inline fun <reified T> get(
         path: String,
         queryParam: Map<String, String?> = emptyMap()
     ): T {
@@ -77,13 +77,13 @@ class TerraHttpClient(
             queryParam.entries.joinToString("&", "?") { "${it.key}=${it.value}" }
         }
 
-        return client.get(baseUrl + path + query)
+        return lcdServer.get(baseUrl + path + query)
     }
 
-    internal suspend inline fun <reified T> post(
+    suspend inline fun <reified T> post(
         path: String,
         body: Any
-    ): T = client.post(baseUrl + path) {
+    ): T = lcdServer.post(baseUrl + path) {
         contentType(ContentType.Application.Json)
 
         this.body = body
