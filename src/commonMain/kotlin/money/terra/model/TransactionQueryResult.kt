@@ -7,6 +7,7 @@ data class TransactionQueryResult(
     val txhash: String,
     val codespace: String?,
     val code: Int?,
+    val data: String?,
     val rawLog: String,
     val logs: List<BroadcastTransactionLog>?,
     val gasWanted: String,
