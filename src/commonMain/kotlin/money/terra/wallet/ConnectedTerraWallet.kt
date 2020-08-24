@@ -43,10 +43,10 @@ class ConnectedTerraWallet(
     }
 
     suspend fun <T : Message> sign(transaction: Transaction<T>): Pair<Transaction<T>, String> {
-        val sequence = getSequence()
+        val sequence = fetchSequence()
 
         return sign(transaction, sequence) to sequence
     }
 
-    private suspend fun getSequence(): String = authApi.getAccountInfo(address).result.value.sequence
+    suspend fun fetchSequence(): String = authApi.getAccountInfo(address).result.value.sequence
 }

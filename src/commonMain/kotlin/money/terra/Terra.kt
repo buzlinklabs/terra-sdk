@@ -2,12 +2,14 @@ package money.terra
 
 import io.ktor.client.features.ClientRequestException
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Semaphore
 import money.terra.client.TerraServer
 import money.terra.client.http.TerraHttpClient
 import money.terra.model.Coin
 import money.terra.model.Transaction
 import money.terra.model.TransactionQueryResult
 import money.terra.model.transaction.*
+import money.terra.util.use
 import money.terra.wallet.ConnectedTerraWallet
 import money.terra.wallet.TerraWallet
 import money.terra.wallet.connect
@@ -37,31 +39,33 @@ class Terra(
 
     private val transactionApi = httpClient.transaction()
 
+    private val semaphore = Semaphore(1)
+
     suspend fun broadcastSync(
         transaction: Transaction<*>,
         gasPrices: List<Coin> = DEFAULT_GAS_PRICES
-    ): BroadcastTransactionSyncResult {
+    ): BroadcastTransactionSyncResult = semaphore.use {
         val broadcastRequest = BroadcastTransactionSyncRequest(transaction.polish(gasPrices))
 
-        return transactionApi.broadcastSignedTransaction(broadcastRequest)
+        transactionApi.broadcastSignedTransaction(broadcastRequest)
     }
 
     suspend fun broadcastAsync(
         transaction: Transaction<*>,
         gasPrices: List<Coin> = DEFAULT_GAS_PRICES
-    ): BroadcastTransactionAsyncResult {
+    ): BroadcastTransactionAsyncResult = semaphore.use {
         val broadcastRequest = BroadcastTransactionAsyncRequest(transaction.polish(gasPrices))
 
-        return transactionApi.broadcastSignedTransaction(broadcastRequest)
+        transactionApi.broadcastSignedTransaction(broadcastRequest)
     }
 
     suspend fun broadcastBlock(
         transaction: Transaction<*>,
         gasPrices: List<Coin> = DEFAULT_GAS_PRICES
-    ): BroadcastTransactionBlockResult {
+    ): BroadcastTransactionBlockResult = semaphore.use {
         val broadcastRequest = BroadcastTransactionBlockRequest(transaction.polish(gasPrices))
 
-        return transactionApi.broadcastSignedTransaction(broadcastRequest)
+        transactionApi.broadcastSignedTransaction(broadcastRequest)
     }
 
     suspend fun estimateFee(
@@ -78,7 +82,12 @@ class Terra(
         return transactionApi.getByHash(transactionHash)
     }
 
-    suspend fun wait(transactionHash: String, intervalMillis: Long = 1000): TransactionQueryResult {
+    suspend fun wait(
+        transactionHash: String,
+        intervalMillis: Long = 1000,
+        preDelayMillis: Long = 5000
+    ): TransactionQueryResult {
+        delay(preDelayMillis)
         while (true) {
             try {
                 return transactionApi.getByHash(transactionHash)
