@@ -26,7 +26,7 @@ repositories {
 }
 
 dependencies {
-    implementation("money.terra:terra-sdk:0.0.1")
+    implementation("money.terra:terra-sdk:0.1.16")
 }
 ```
 
