@@ -1,4 +1,5 @@
 # Terra Kotlin SDK
+[![Download](https://api.bintray.com/packages/terra-money/maven/terra-sdk/images/download.svg)](https://bintray.com/terra-money/maven/terra-sdk/_latestVersion)
 
 ## Support platform
 * JVM
@@ -9,9 +10,16 @@
 * Get account info
 * Get account balance
 * Create transaction
-  * Send coins (bank/MsgSend)
-  * Instantiate contract (wasm/InstantiateContract)
-  * Execute contract (wasm/ExecuteContract)
+  * bank
+  * distribution
+  * governance
+  * market
+  * message_auth
+  * oracle
+  * slashing
+  * staking
+  * wasm
+  * proposals
 * Sign transaction
 * Broadcast transaction
   * Async mode
@@ -23,10 +31,13 @@
 ```
 repositories {
     jcenter()
+
+    // If can't find
+    maven("https://dl.bintray.com/terra-money/maven")
 }
 
 dependencies {
-    implementation("money.terra:terra-sdk:0.1.16")
+    implementation("money.terra:terra-sdk:$terraSdkVersion")
 }
 ```
 
@@ -42,15 +53,9 @@ val wallet: TerraWallet = TerraWallet.create()
 ```
 ### Connect terra network using http
 ```
-val network = Network("soju-0014")
-val server = TerraServer("soju-lcd.terra.dev", network)
-
-or 
-
-val network = ProvidedNetwork.SOJU_0014
-val server = ProvidedTerraServer.SOJU
-
-val terra = Terra.connect(wallet, network, server)
+val chainId = "tequila-0004"
+val lcdUrl = "https://tequila-lcd.terra.dev"
+val terra = Terra.connect(wallet, chainId, lcdUrl)
 ```
 ### Make transaction : send coins
 ```
@@ -63,6 +68,10 @@ val result = terra.broadcastAsync {
     fee = transactionFee
 
     SendMessage(wallet.address, targetAddress, coins).addThis()
+    
+    or
+
+    with { SendMessage(wallet.address, targetAddress, coins) }
 }
 
 //sync mode
@@ -70,6 +79,10 @@ val result = terra.broadcastSync {
     fee = transactionFee
 
     SendMessage(wallet.address, targetAddress, coins).addThis()
+    
+    or
+
+    with { SendMessage(wallet.address, targetAddress, coins) }
 }
 
 //block mode
@@ -77,6 +90,10 @@ val result = terra.broadcastBlock {
     fee = transactionFee
 
     SendMessage(wallet.address, targetAddress, coins).addThis()
+    
+    or
+
+    with { SendMessage(wallet.address, targetAddress, coins) }
 }
 
 val txHash = result.txhash //txHash = 82D5440A4C4CAB5B74EE3C98CE7F755372CD92E945425A572654179A4A0EE678
