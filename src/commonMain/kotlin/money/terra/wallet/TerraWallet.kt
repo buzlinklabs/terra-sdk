@@ -1,10 +1,10 @@
 package money.terra.wallet
 
+import kr.jadekim.common.util.encoder.HEX
 import kr.jadekim.common.util.encoder.asHex
 import kr.jadekim.common.util.encoder.asHexString
 import kr.jadekim.common.util.ext.bytes
 import kr.jadekim.common.util.hash.SHA_256
-import money.terra.ProvidedNetwork
 import money.terra.bip.Bech32
 import money.terra.bip.Bip32
 import money.terra.bip.Mnemonic
@@ -86,10 +86,10 @@ open class TerraWalletImpl(
 }
 
 @Suppress("FunctionName")
-fun TerraWallet(publicKey: ByteArray, privateKey: ByteArray) = TerraWalletImpl(publicKey, privateKey)
+fun TerraWallet(publicKey: String, privateKey: String) = TerraWalletImpl(HEX.decode(publicKey), HEX.decode(publicKey))
 
-suspend fun TerraWallet.connect(network: ProvidedNetwork) = ConnectedTerraWallet(this, network)
-    .apply { connect() }
+@Suppress("FunctionName")
+fun TerraWallet(publicKey: ByteArray, privateKey: ByteArray) = TerraWalletImpl(publicKey, privateKey)
 
 suspend fun TerraWallet.connect(httpClient: TerraHttpClient) = ConnectedTerraWallet(this, httpClient)
     .apply { connect() }

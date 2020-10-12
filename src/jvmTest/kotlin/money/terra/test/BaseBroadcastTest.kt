@@ -15,8 +15,7 @@ abstract class BaseBroadcastTest(private val terra: Terra) {
 
     private val hashCheckApi = TerraHttpClient(
         terra.wallet.httpClient.network,
-        terra.wallet.httpClient.server,
-        protocol = terra.wallet.httpClient.protocol
+        terra.wallet.httpClient.serverUrl
     ).transaction()
 
     abstract fun TransactionBuilder.setup()

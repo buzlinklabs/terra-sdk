@@ -1,6 +1,5 @@
 package money.terra.wallet
 
-import money.terra.ProvidedNetwork
 import money.terra.client.http.TerraHttpClient
 import money.terra.model.Transaction
 import money.terra.signer.MessageSigner
@@ -20,11 +19,6 @@ class ConnectedTerraWallet(
     private val authApi = httpClient.auth()
 
     private lateinit var signer: MessageSigner
-
-    constructor(
-        wallet: TerraWallet,
-        network: ProvidedNetwork
-    ) : this(wallet, TerraHttpClient(network))
 
     override suspend fun connect() {
         accountNumber = authApi.getAccountInfo(address).result.value.accountNumber

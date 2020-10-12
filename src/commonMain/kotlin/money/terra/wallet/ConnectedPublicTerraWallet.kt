@@ -1,7 +1,6 @@
 package money.terra.wallet
 
 import money.terra.Network
-import money.terra.ProvidedNetwork
 import money.terra.client.http.TerraHttpClient
 import money.terra.model.Coin
 
@@ -16,11 +15,6 @@ open class ConnectedPublicTerraWallet(
         protected set
 
     private val bankApi = httpClient.bank()
-
-    constructor(
-        wallet: PublicTerraWallet,
-        network: ProvidedNetwork
-    ) : this(wallet, TerraHttpClient(network))
 
     open suspend fun connect() {
         isConnected = true

@@ -1,9 +1,8 @@
 package money.terra
 
-import io.ktor.client.features.ClientRequestException
+import io.ktor.client.features.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Semaphore
-import money.terra.client.TerraServer
 import money.terra.client.http.TerraHttpClient
 import money.terra.model.Coin
 import money.terra.model.Transaction
@@ -20,12 +19,8 @@ class Terra(
 
     companion object {
 
-        suspend fun connect(wallet: TerraWallet, network: Network, server: TerraServer): Terra {
-            return connect(wallet, TerraHttpClient(network, server))
-        }
-
-        suspend fun connect(wallet: TerraWallet, network: ProvidedNetwork): Terra {
-            return connect(wallet, TerraHttpClient(network))
+        suspend fun connect(wallet: TerraWallet, chainId: String, lcdUrl: String): Terra {
+            return Terra(wallet.connect(TerraHttpClient(Network(chainId), lcdUrl)))
         }
 
         suspend fun connect(wallet: TerraWallet, liteClient: TerraHttpClient): Terra {

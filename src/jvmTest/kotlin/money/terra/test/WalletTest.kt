@@ -28,9 +28,9 @@ class WalletTest {
 
     @Test
     fun testConnectWallet() {
-        val wallet = runBlocking { TerraWallet.from(MNEMONIC).connect(NETWORK) }
+        val wallet = runBlocking { TerraWallet.from(MNEMONIC).connect(HTTP_CLIENT) }
 
         assert(wallet.isConnected)
-        assert(wallet.accountNumber == SOJU_ACCOUNT_NUMBER)
+        assert(wallet.accountNumber.isNotBlank())
     }
 }

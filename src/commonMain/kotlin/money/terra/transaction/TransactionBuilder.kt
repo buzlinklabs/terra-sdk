@@ -14,7 +14,11 @@ class TransactionBuilder {
 
     fun build() = Transaction(messages.map { it.wrapper() }, fee, memo)
 
-    fun Message.addThis() = messages.add(this)
+    fun with(message: Message) = messages.add(message)
+
+    inline fun with(block: () -> Message) = with(block())
+
+    fun Message.addThis() = with(this)
 }
 
 suspend inline fun Terra.broadcastSync(

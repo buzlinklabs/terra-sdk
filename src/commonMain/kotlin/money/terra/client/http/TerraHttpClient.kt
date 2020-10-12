@@ -1,23 +1,13 @@
 package money.terra.client.http
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.HttpClientEngineConfig
-import io.ktor.client.engine.HttpClientEngineFactory
-import io.ktor.client.features.HttpTimeout
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.JsonSerializer
-import io.ktor.client.features.logging.DEFAULT
-import io.ktor.client.features.logging.LogLevel
-import io.ktor.client.features.logging.Logger
-import io.ktor.client.features.logging.Logging
-import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
+import io.ktor.client.*
+import io.ktor.client.engine.*
+import io.ktor.client.features.*
+import io.ktor.client.features.json.*
+import io.ktor.client.features.logging.*
+import io.ktor.client.request.*
+import io.ktor.http.*
 import money.terra.Network
-import money.terra.ProvidedNetwork
-import money.terra.client.ProvidedTerraServer
-import money.terra.client.TerraServer
 import money.terra.client.http.api.AuthApi
 import money.terra.client.http.api.BankApi
 import money.terra.client.http.api.TransactionApi
@@ -37,12 +27,11 @@ class EngineFactory<T : HttpClientEngineConfig>(
 
 class TerraHttpClient(
     val network: Network,
-    val server: TerraServer,
-    val timeoutMillis: Long = 10000,
-    val protocol: String = "https"
+    val serverUrl: String,
+    val timeoutMillis: Long = 10000
 ) {
 
-    val baseUrl: String = "$protocol://${server.host}"
+    val baseUrl: String = if (serverUrl.endsWith("/")) serverUrl.dropLast(1) else serverUrl
 
     val lcdServer = HttpClient(ENGINE_FACTORY.engine) {
         engine(ENGINE_FACTORY.configure)
@@ -60,12 +49,6 @@ class TerraHttpClient(
             level = LogLevel.ALL
         }
     }
-
-    constructor(
-        network: ProvidedNetwork,
-        timeoutMillis: Long = 10000,
-        protocol: String = "https"
-    ) : this(network, ProvidedTerraServer.of(network), timeoutMillis, protocol)
 
     suspend inline fun <reified T> get(
         path: String,

@@ -1,7 +1,6 @@
 package money.terra.signer
 
 import kr.jadekim.common.util.hash.SHA_256
-import money.terra.ProvidedNetwork
 import money.terra.client.http.TerraHttpClient
 import money.terra.bip.Bip32
 import money.terra.model.Signature
@@ -16,8 +15,6 @@ class MessageSigner(
 ) {
 
     val network = httpClient.network
-
-    constructor(wallet: ConnectedTerraWallet, network: ProvidedNetwork) : this(wallet, TerraHttpClient(network))
 
     init {
         if (!wallet.isConnected) {
