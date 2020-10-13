@@ -1,33 +1,11 @@
 # Terra Kotlin SDK
 [![Download](https://api.bintray.com/packages/terra-money/maven/terra-sdk/images/download.svg)](https://bintray.com/terra-money/maven/terra-sdk/_latestVersion)
 
-## Support platform
+## Support Platform
 * JVM
 
-## Implemented feature
-* Create wallet
-* Get transaction info
-* Get account info
-* Get account balance
-* Create transaction
-  * bank
-  * distribution
-  * governance
-  * market
-  * message_auth
-  * oracle
-  * slashing
-  * staking
-  * wasm
-  * proposals
-* Sign transaction
-* Broadcast transaction
-  * Async mode
-  * Sync mode
-  * Block mode
-
 ## Install
-### JVM (Java, Kotlin, Android, ...)
+### JVM
 ```
 repositories {
     jcenter()
