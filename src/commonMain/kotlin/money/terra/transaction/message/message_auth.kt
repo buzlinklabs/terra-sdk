@@ -17,11 +17,11 @@ data class SendAuthorization(
 class GrantAuthorizationMessage(
     val granter: String,
     val grantee: String,
-    authorizations: List<Authorization>,
+    authorization: Authorization,
     val period: String
 ) : Message("msgauth/MsgGrantAuthorization") {
 
-    val authorization: List<TypeWrapper<Authorization>> = authorizations.map { it.wrapper() }
+    val authorization: TypeWrapper<Authorization> = authorization.wrapper()
 }
 
 data class RevokeAuthorizationMessage(
