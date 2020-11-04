@@ -8,10 +8,7 @@ import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import money.terra.Network
-import money.terra.client.http.api.AuthApi
-import money.terra.client.http.api.BankApi
-import money.terra.client.http.api.TransactionApi
-import money.terra.client.http.api.WasmApi
+import money.terra.client.http.api.*
 import money.terra.wallet.PublicTerraWallet
 import money.terra.wallet.TerraWallet
 import money.terra.wallet.connect
@@ -79,6 +76,8 @@ class TerraHttpClient(
     fun auth() = AuthApi(this)
 
     fun bank() = BankApi(this)
+
+    fun market() = MarketApi(this)
 
     fun transaction() = TransactionApi(this)
 
