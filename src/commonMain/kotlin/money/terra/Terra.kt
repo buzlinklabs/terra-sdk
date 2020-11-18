@@ -30,6 +30,8 @@ class Terra(
         val DEFAULT_GAS_PRICES = listOf(Coin("uluna", "50"))
     }
 
+    var sequenceProvider: (suspend () -> Long)? = null
+
     private val httpClient = wallet.httpClient
 
     private val transactionApi = httpClient.transaction()
@@ -96,9 +98,15 @@ class Terra(
         if (fee == null) {
             val transaction = copy(fee = estimateFee(this, gasPrices = gasPrices).asFee)
 
-            return wallet.sign(transaction).first
+            return transaction.sign()
         }
 
-        return if (isSigned) this else wallet.sign(this).first
+        return if (isSigned) this else sign()
+    }
+
+    private suspend fun Transaction<*>.sign() = if (sequenceProvider == null) {
+        wallet.sign(this).first
+    } else {
+        wallet.sign(this, sequenceProvider!!.invoke())
     }
 }

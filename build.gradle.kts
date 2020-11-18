@@ -9,7 +9,7 @@ plugins {
 
 val artifactName = "terra-sdk"
 val artifactGroup = "money.terra"
-val artifactVersion = "0.2.2"
+val artifactVersion = "0.2.5"
 group = artifactGroup
 version = artifactVersion
 

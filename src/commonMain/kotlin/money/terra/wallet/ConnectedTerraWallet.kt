@@ -16,6 +16,8 @@ class ConnectedTerraWallet(
     lateinit var accountNumber: String
         private set
 
+    private var latestUsedSequence: Long? = null
+
     private val authApi = httpClient.auth()
 
     private lateinit var signer: MessageSigner
@@ -28,16 +30,14 @@ class ConnectedTerraWallet(
         signer = MessageSigner(this, httpClient)
     }
 
-    fun <T : Message> sign(transaction: Transaction<T>, sequence: String): Transaction<T> {
-        if (!isConnected) {
-            throw IllegalStateException("Not connected")
-        }
+    fun <T : Message> sign(transaction: Transaction<T>, sequence: Long): Transaction<T> {
+        latestUsedSequence = sequence
 
-        return signer.sign(transaction, sequence)
+        return signer.sign(transaction, sequence.toString())
     }
 
-    suspend fun <T : Message> sign(transaction: Transaction<T>): Pair<Transaction<T>, String> {
-        val sequence = fetchSequence()
+    suspend fun <T : Message> sign(transaction: Transaction<T>): Pair<Transaction<T>, Long> {
+        val sequence = latestUsedSequence?.plus(1) ?: fetchSequence().toLong()
 
         return sign(transaction, sequence) to sequence
     }
