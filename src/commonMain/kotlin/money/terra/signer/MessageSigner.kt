@@ -1,7 +1,7 @@
 package money.terra.signer
 
 import kr.jadekim.common.util.hash.SHA_256
-import money.terra.client.http.TerraHttpClient
+import money.terra.Network
 import money.terra.bip.Bip32
 import money.terra.model.Signature
 import money.terra.model.Transaction
@@ -11,16 +11,8 @@ import money.terra.wallet.ConnectedTerraWallet
 
 class MessageSigner(
     val wallet: ConnectedTerraWallet,
-    httpClient: TerraHttpClient
+    val network: Network
 ) {
-
-    val network = httpClient.network
-
-    init {
-        if (!wallet.isConnected) {
-            throw IllegalStateException("Not connected")
-        }
-    }
 
     fun <T : Message> sign(transaction: Transaction<T>, sequence: String): Transaction<T> {
         if (transaction.fee == null) {

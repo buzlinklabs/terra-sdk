@@ -30,7 +30,6 @@ class WalletTest {
     fun testConnectWallet() {
         val wallet = runBlocking { TerraWallet.from(MNEMONIC).connect(HTTP_CLIENT) }
 
-        assert(wallet.isConnected)
         assert(wallet.accountNumber.isNotBlank())
     }
 }

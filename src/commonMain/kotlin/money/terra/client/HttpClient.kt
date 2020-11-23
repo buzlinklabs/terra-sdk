@@ -1,4 +1,4 @@
-package money.terra.client.http
+package money.terra.client
 
 import io.ktor.client.*
 import io.ktor.client.engine.*
@@ -7,11 +7,6 @@ import io.ktor.client.features.json.*
 import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import money.terra.Network
-import money.terra.client.http.api.*
-import money.terra.wallet.PublicTerraWallet
-import money.terra.wallet.TerraWallet
-import money.terra.wallet.connect
 
 internal expect val ENGINE_FACTORY: EngineFactory<HttpClientEngineConfig>
 
@@ -22,15 +17,14 @@ class EngineFactory<T : HttpClientEngineConfig>(
     val configure: T.() -> Unit = {}
 )
 
-class TerraHttpClient(
-    val network: Network,
+class HttpClient(
     val serverUrl: String,
     val timeoutMillis: Long = 10000
 ) {
 
     val baseUrl: String = if (serverUrl.endsWith("/")) serverUrl.dropLast(1) else serverUrl
 
-    val lcdServer = HttpClient(ENGINE_FACTORY.engine) {
+    val server = HttpClient(ENGINE_FACTORY.engine) {
         engine(ENGINE_FACTORY.configure)
 
         install(JsonFeature) {
@@ -57,29 +51,15 @@ class TerraHttpClient(
             queryParam.entries.joinToString("&", "?") { "${it.key}=${it.value}" }
         }
 
-        return lcdServer.get(baseUrl + path + query)
+        return server.get(baseUrl + path + query)
     }
 
     suspend inline fun <reified T> post(
         path: String,
         body: Any
-    ): T = lcdServer.post(baseUrl + path) {
+    ): T = server.post(baseUrl + path) {
         contentType(ContentType.Application.Json)
 
         this.body = body
     }
-
-    suspend fun wallet(address: String) = PublicTerraWallet(address).connect(this)
-
-    suspend fun wallet(publicKey: ByteArray, privateKey: ByteArray) = TerraWallet(publicKey, privateKey).connect(this)
-
-    fun auth() = AuthApi(this)
-
-    fun bank() = BankApi(this)
-
-    fun market() = MarketApi(this)
-
-    fun transaction() = TransactionApi(this)
-
-    fun wasm() = WasmApi(this)
 }

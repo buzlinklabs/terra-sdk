@@ -1,12 +1,12 @@
-package money.terra.client.http.api
+package money.terra.client.lcd.api
 
-import money.terra.client.http.TerraHttpClient
+import money.terra.client.HttpClient
 import money.terra.model.ResultWrapper
 import money.terra.model.TransactionQueryResult
 import money.terra.model.transaction.*
 
 class TransactionApi(
-    private val client: TerraHttpClient
+    private val client: HttpClient
 ) {
 
     suspend fun getByHash(hash: String): TransactionQueryResult {

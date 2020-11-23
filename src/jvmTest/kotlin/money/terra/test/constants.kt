@@ -1,7 +1,7 @@
 package money.terra.test
 
 import money.terra.Network
-import money.terra.client.http.TerraHttpClient
+import money.terra.client.lcd.TerraLcdClient
 
 val MNEMONIC = "police head unfair frozen animal sketch peace budget orange foot " +
         "fault quantum caution make reject fruit minimum east stuff leisure " +
@@ -13,4 +13,4 @@ val ADDRESS = "terra14aqr0fwhsh334qpeu39wuzdt9hkw2pwvwnyvh6"
 val TEST_ADDRESS = "terra1c9q3dtvzfw2hmlkss75vx7dl7k0h3eshvescrw"
 
 val NETWORK = Network("tequila-0004")
-val HTTP_CLIENT = TerraHttpClient(NETWORK, "https://tequila-lcd.terra.dev")
+val HTTP_CLIENT = TerraLcdClient(NETWORK, "https://tequila-lcd.terra.dev")

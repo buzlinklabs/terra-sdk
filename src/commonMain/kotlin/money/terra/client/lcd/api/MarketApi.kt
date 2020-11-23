@@ -1,11 +1,11 @@
-package money.terra.client.http.api
+package money.terra.client.lcd.api
 
-import money.terra.client.http.TerraHttpClient
+import money.terra.client.HttpClient
 import money.terra.model.Coin
 import money.terra.model.ResultWrapper
 
 class MarketApi(
-    private val client: TerraHttpClient
+    private val client: HttpClient
 ) {
 
     suspend fun estimateSwapResult(quantity: String, offerDenom: String, askDenom: String): ResultWrapper<Coin> {

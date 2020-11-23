@@ -1,10 +1,8 @@
 package money.terra.test
 
-import io.ktor.client.features.ClientRequestException
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import money.terra.Terra
-import money.terra.client.http.TerraHttpClient
+import money.terra.model.Coin
 import money.terra.model.transaction.BroadcastTransactionResult
 import money.terra.transaction.TransactionBuilder
 import money.terra.transaction.broadcastSync
@@ -12,11 +10,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 abstract class BaseBroadcastTest(private val terra: Terra) {
-
-    private val hashCheckApi = TerraHttpClient(
-        terra.wallet.httpClient.network,
-        terra.wallet.httpClient.serverUrl
-    ).transaction()
 
     abstract fun TransactionBuilder.setup()
 
@@ -27,7 +20,7 @@ abstract class BaseBroadcastTest(private val terra: Terra) {
     @Test
     @DisplayName("broadcast")
     fun testBroadcastSync() {
-        val result = runBlocking { terra.broadcastSync { setup() } }
+        val result = runBlocking { terra.broadcastSync(gasPrices = listOf(Coin("uluna", "50"))) { setup() } }
 
         result.validate()
 
@@ -36,15 +29,8 @@ abstract class BaseBroadcastTest(private val terra: Terra) {
 
     private fun waitTransactionComplete(hash: String) {
         runBlocking {
-            while (true) {
-                try {
-                    val result = hashCheckApi.getByHash(hash)
-                    println("success get transaction : $hash - ${result.rawLog}")
-                    break
-                } catch (e: ClientRequestException) {
-                    delay(1000)
-                }
-            }
+            val result = terra.wait(hash)
+            println("success get transaction : $hash - ${result.rawLog}")
         }
     }
 }

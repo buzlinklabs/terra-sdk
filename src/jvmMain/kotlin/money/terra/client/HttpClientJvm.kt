@@ -1,6 +1,6 @@
 @file:Suppress("UNCHECKED_CAST")
 
-package money.terra.client.http
+package money.terra.client
 
 import io.ktor.client.engine.HttpClientEngineConfig
 import io.ktor.client.engine.okhttp.OkHttp

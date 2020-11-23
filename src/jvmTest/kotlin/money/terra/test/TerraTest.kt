@@ -2,7 +2,6 @@ package money.terra.test
 
 import kotlinx.coroutines.runBlocking
 import money.terra.Terra
-import money.terra.client.http.api.TransactionApi
 import money.terra.model.Coin
 import money.terra.transaction.TransactionBuilder
 import money.terra.transaction.message.SendMessage
@@ -17,13 +16,11 @@ class TerraTest {
     companion object {
 
         private lateinit var terra: Terra
-        private lateinit var transactionApi: TransactionApi
 
         @BeforeAll
         @JvmStatic
         fun init() {
             terra = runBlocking { Terra.connect(TerraWallet.from(MNEMONIC), HTTP_CLIENT) }
-            transactionApi = terra.wallet.httpClient.transaction()
         }
     }
 
@@ -32,7 +29,7 @@ class TerraTest {
     fun testGetTransaction() {
         val transactionHash = "C716BF66B3CBFA771F6969F0215062B7AAE741DFA51CB97819B1F96485CEEFA6"
 
-        runBlocking { transactionApi.getByHash(transactionHash) }
+        runBlocking { terra.client.getByHash(transactionHash) }
     }
 
     @Nested

@@ -8,7 +8,8 @@ import kr.jadekim.common.util.hash.SHA_256
 import money.terra.bip.Bech32
 import money.terra.bip.Bip32
 import money.terra.bip.Mnemonic
-import money.terra.client.http.TerraHttpClient
+import money.terra.client.TerraClient
+import money.terra.client.lcd.TerraLcdClient
 import money.terra.hash.RIPEMD160
 
 interface TerraWallet : PublicTerraWallet {
@@ -86,10 +87,10 @@ open class TerraWalletImpl(
 }
 
 @Suppress("FunctionName")
-fun TerraWallet(publicKey: String, privateKey: String) = TerraWalletImpl(HEX.decode(publicKey), HEX.decode(publicKey))
+fun TerraWallet(publicKey: String, privateKey: String) = TerraWalletImpl(HEX.decode(publicKey), HEX.decode(privateKey))
 
 @Suppress("FunctionName")
 fun TerraWallet(publicKey: ByteArray, privateKey: ByteArray) = TerraWalletImpl(publicKey, privateKey)
 
-suspend fun TerraWallet.connect(httpClient: TerraHttpClient) = ConnectedTerraWallet(this, httpClient)
-    .apply { connect() }
+suspend fun TerraWallet.connect(client: TerraClient) =
+    ConnectedTerraWallet(this, client.getAccountNumber(address), client)

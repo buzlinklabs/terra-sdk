@@ -1,6 +1,6 @@
-package money.terra.client.http.api
+package money.terra.client.lcd.api
 
-import money.terra.client.http.TerraHttpClient
+import money.terra.client.HttpClient
 import money.terra.model.Coin
 import money.terra.model.ResultWrapper
 import money.terra.model.Transaction
@@ -9,7 +9,7 @@ import money.terra.model.bank.SendCoinRequest
 import money.terra.transaction.message.SendMessage
 
 class BankApi(
-    private val client: TerraHttpClient
+    private val client: HttpClient
 ) {
 
     suspend fun getAccountBalances(address: String): ResultWrapper<List<Coin>> {
