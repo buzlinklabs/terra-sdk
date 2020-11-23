@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Date
 
 plugins {
-    kotlin("multiplatform") version "1.3.72"
+    kotlin("multiplatform") version "1.4.10"
     `maven-publish`
     id("com.jfrog.bintray") version "1.8.4"
 }
@@ -39,7 +39,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib-common"))
 
-                implementation("kr.jadekim:common-util-common:1.1.0")
+                implementation("kr.jadekim:common-util-common:1.1.7")
 
                 implementation("io.ktor:ktor-client-core:$ktorClientVersion")
                 implementation("io.ktor:ktor-client-json:$ktorClientVersion")
@@ -56,7 +56,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib-jdk8"))
 
-                implementation("kr.jadekim:common-util:1.1.0")
+                implementation("kr.jadekim:common-util:1.1.7")
 
                 implementation("org.web3j:crypto:4.5.17")
 

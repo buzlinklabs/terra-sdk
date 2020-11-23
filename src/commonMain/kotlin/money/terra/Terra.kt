@@ -2,16 +2,13 @@ package money.terra
 
 import io.ktor.client.features.*
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.sync.Semaphore
 import money.terra.client.TerraClient
 import money.terra.client.lcd.TerraLcdClient
 import money.terra.model.Coin
 import money.terra.model.Fee
 import money.terra.model.Transaction
 import money.terra.model.TransactionQueryResult
-import money.terra.model.transaction.BroadcastTransactionAsyncResult
-import money.terra.model.transaction.BroadcastTransactionBlockResult
-import money.terra.model.transaction.BroadcastTransactionSyncResult
+import money.terra.transaction.message.Message
 import money.terra.util.provider.*
 import money.terra.wallet.ConnectedTerraWallet
 import money.terra.wallet.TerraWallet
@@ -42,31 +39,23 @@ class Terra(
 
     private val walletAddress = wallet.address
 
-    private val semaphore = Semaphore(1)
-
-    suspend fun broadcastSync(
-        transaction: Transaction<*>,
+    suspend fun <T : Message> broadcastSync(
+        transaction: Transaction<T>,
         gasAmount: Long? = null,
         gasPrices: List<Coin>? = null
-    ): BroadcastTransactionSyncResult = semaphoreProvider.use(walletAddress) {
-        client.broadcastSync(transaction.polish(gasAmount, gasPrices))
-    }
+    ) = broadcast(transaction, gasAmount, gasPrices, client::broadcastSync)
 
-    suspend fun broadcastAsync(
-        transaction: Transaction<*>,
+    suspend fun <T : Message> broadcastAsync(
+        transaction: Transaction<T>,
         gasAmount: Long? = null,
         gasPrices: List<Coin>? = null
-    ): BroadcastTransactionAsyncResult = semaphoreProvider.use(walletAddress) {
-        client.broadcastAsync(transaction.polish(gasAmount, gasPrices))
-    }
+    ) = broadcast(transaction, gasAmount, gasPrices, client::broadcastAsync)
 
-    suspend fun broadcastBlock(
-        transaction: Transaction<*>,
+    suspend fun <T : Message> broadcastBlock(
+        transaction: Transaction<T>,
         gasAmount: Long? = null,
         gasPrices: List<Coin>? = null
-    ): BroadcastTransactionBlockResult = semaphoreProvider.use(walletAddress) {
-        client.broadcastBlock(transaction.polish(gasAmount, gasPrices))
-    }
+    ) = broadcast(transaction, gasAmount, gasPrices, client::broadcastBlock)
 
     suspend fun estimateFee(
         transaction: Transaction<*>,
@@ -101,10 +90,26 @@ class Terra(
         }
     }
 
-    private suspend fun Transaction<*>.polish(
+    private suspend fun <T : Message, R> broadcast(
+        transaction: Transaction<T>,
+        gasAmount: Long?,
+        gasPrices: List<Coin>?,
+        broadcaster: suspend (Transaction<*>) -> R
+    ) = semaphoreProvider.use(walletAddress) {
+        try {
+            val polishedTransaction = transaction.polish(gasAmount, gasPrices)
+            polishedTransaction to broadcaster(polishedTransaction)
+        } catch (e: Exception) {
+            sequenceProvider.refresh(walletAddress)
+
+            throw e
+        }
+    }
+
+    private suspend fun <T : Message> Transaction<T>.polish(
         gasAmount: Long?,
         gasPrices: List<Coin>?
-    ): Transaction<*> {
+    ): Transaction<T> {
         if (fee == null) {
             val providedGasPrices = gasPrices ?: gasPriceProvider?.get(this)
             if (providedGasPrices.isNullOrEmpty()) {
@@ -120,5 +125,5 @@ class Terra(
         return if (isSigned) this else sign()
     }
 
-    private suspend fun Transaction<*>.sign() = wallet.sign(this, sequenceProvider.get(walletAddress))
+    private suspend fun <T : Message> Transaction<T>.sign() = wallet.sign(this, sequenceProvider.next(walletAddress))
 }
