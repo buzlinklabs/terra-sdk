@@ -10,7 +10,6 @@ import money.terra.model.transaction.BroadcastTransactionAsyncRequest
 import money.terra.model.transaction.BroadcastTransactionBlockRequest
 import money.terra.model.transaction.BroadcastTransactionSyncRequest
 import money.terra.model.transaction.EstimateFeeRequest
-import money.terra.wallet.*
 
 open class TerraLcdClient(
     override val network: Network,
@@ -24,16 +23,12 @@ open class TerraLcdClient(
     val bankApi = BankApi(lcdServer)
     val marketApi = MarketApi(lcdServer)
     val transactionApi = TransactionApi(lcdServer)
+    val treasuryApi = TreasuryApi(lcdServer)
     val wasmApi = WasmApi(lcdServer)
 
-    override suspend fun wallet(address: String) = PublicTerraWallet(address).connect(this)
+    override suspend fun getTaxCapacity(denom: String): Long = treasuryApi.getTaxCapacity(denom).result.toLong()
 
-    override suspend fun wallet(publicKey: ByteArray, privateKey: ByteArray) =
-        TerraWallet(publicKey, privateKey).connect(this)
-
-    override suspend fun connect(wallet: PublicTerraWallet): ConnectedPublicTerraWallet = wallet.connect(this)
-
-    override suspend fun connect(wallet: TerraWallet): ConnectedTerraWallet = wallet.connect(this)
+    override suspend fun getTaxRate(): String = treasuryApi.getTaxRate().result
 
     override suspend fun getAccountBalances(address: String) = bankApi.getAccountBalances(address).result
 

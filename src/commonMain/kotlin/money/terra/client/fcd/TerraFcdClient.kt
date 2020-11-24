@@ -10,8 +10,9 @@ import money.terra.model.Coin
 class TerraFcdClient(
     network: Network,
     serverUrl: String,
-    timeoutMillis: Long = 10000
-) : TerraClient by TerraLcdClient(network, serverUrl, timeoutMillis) {
+    timeoutMillis: Long = 10000,
+    val lcdClient: TerraLcdClient = TerraLcdClient(network, serverUrl, timeoutMillis)
+) : TerraClient by lcdClient {
 
     val fcdServer = HttpClient(serverUrl, timeoutMillis)
 

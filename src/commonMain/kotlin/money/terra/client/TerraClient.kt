@@ -8,22 +8,15 @@ import money.terra.model.TransactionQueryResult
 import money.terra.model.transaction.BroadcastTransactionAsyncResult
 import money.terra.model.transaction.BroadcastTransactionBlockResult
 import money.terra.model.transaction.BroadcastTransactionSyncResult
-import money.terra.wallet.ConnectedPublicTerraWallet
-import money.terra.wallet.ConnectedTerraWallet
-import money.terra.wallet.PublicTerraWallet
-import money.terra.wallet.TerraWallet
+import money.terra.wallet.*
 
 interface TerraClient {
 
     val network: Network
 
-    suspend fun wallet(address: String): ConnectedPublicTerraWallet
+    suspend fun getTaxCapacity(denom: String): Long
 
-    suspend fun wallet(publicKey: ByteArray, privateKey: ByteArray): ConnectedTerraWallet
-
-    suspend fun connect(wallet: PublicTerraWallet): ConnectedPublicTerraWallet
-
-    suspend fun connect(wallet: TerraWallet): ConnectedTerraWallet
+    suspend fun getTaxRate(): String
 
     suspend fun getAccountBalances(address: String): List<Coin>
 
@@ -41,3 +34,14 @@ interface TerraClient {
 
     suspend fun broadcastBlock(transaction: Transaction<*>): BroadcastTransactionBlockResult
 }
+
+fun TerraClient.wallet(address: String) = PublicTerraWallet(address).connect(this)
+
+fun TerraClient.connect(wallet: PublicTerraWallet) = wallet.connect(this)
+
+suspend fun TerraClient.wallet(
+    publicKey: ByteArray,
+    privateKey: ByteArray
+) = TerraWallet(publicKey, privateKey).connect(this)
+
+suspend fun TerraClient.connect(wallet: TerraWallet) = wallet.connect(this)
