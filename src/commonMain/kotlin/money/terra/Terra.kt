@@ -3,6 +3,7 @@ package money.terra
 import io.ktor.client.features.*
 import kotlinx.coroutines.delay
 import money.terra.client.TerraClient
+import money.terra.client.connect
 import money.terra.client.lcd.TerraLcdClient
 import money.terra.model.Coin
 import money.terra.model.Fee
@@ -13,6 +14,7 @@ import money.terra.util.provider.*
 import money.terra.wallet.ConnectedTerraWallet
 import money.terra.wallet.TerraWallet
 import money.terra.wallet.connect
+import kotlin.math.ceil
 
 class Terra(
     val wallet: ConnectedTerraWallet
@@ -42,20 +44,23 @@ class Terra(
     suspend fun <T : Message> broadcastSync(
         transaction: Transaction<T>,
         gasAmount: Long? = null,
-        gasPrices: List<Coin>? = null
-    ) = broadcast(transaction, gasAmount, gasPrices, client::broadcastSync)
+        gasPrices: List<Coin>? = null,
+        withLock: Boolean = true
+    ) = broadcast(transaction, gasAmount, gasPrices, withLock, client::broadcastSync)
 
     suspend fun <T : Message> broadcastAsync(
         transaction: Transaction<T>,
         gasAmount: Long? = null,
-        gasPrices: List<Coin>? = null
-    ) = broadcast(transaction, gasAmount, gasPrices, client::broadcastAsync)
+        gasPrices: List<Coin>? = null,
+        withLock: Boolean = true
+    ) = broadcast(transaction, gasAmount, gasPrices, withLock, client::broadcastAsync)
 
     suspend fun <T : Message> broadcastBlock(
         transaction: Transaction<T>,
         gasAmount: Long? = null,
-        gasPrices: List<Coin>? = null
-    ) = broadcast(transaction, gasAmount, gasPrices, client::broadcastBlock)
+        gasPrices: List<Coin>? = null,
+        withLock: Boolean = true
+    ) = broadcast(transaction, gasAmount, gasPrices, withLock, client::broadcastBlock)
 
     suspend fun estimateFee(
         transaction: Transaction<*>,
@@ -94,16 +99,28 @@ class Terra(
         transaction: Transaction<T>,
         gasAmount: Long?,
         gasPrices: List<Coin>?,
+        withLock: Boolean,
         broadcaster: suspend (Transaction<*>) -> R
-    ) = semaphoreProvider.use(walletAddress) {
-        try {
-            val polishedTransaction = transaction.polish(gasAmount, gasPrices)
-            polishedTransaction to broadcaster(polishedTransaction)
-        } catch (e: Exception) {
-            sequenceProvider.refresh(walletAddress)
-
-            throw e
+    ) = if (withLock) {
+        semaphoreProvider.use(walletAddress) {
+            broadcast(transaction, gasAmount, gasPrices, broadcaster)
         }
+    } else {
+        broadcast(transaction, gasAmount, gasPrices, broadcaster)
+    }
+
+    private suspend fun <T : Message, R> broadcast(
+        transaction: Transaction<T>,
+        gasAmount: Long?,
+        gasPrices: List<Coin>?,
+        broadcaster: suspend (Transaction<*>) -> R
+    ) = try {
+        val polishedTransaction = transaction.polish(gasAmount, gasPrices)
+        polishedTransaction to broadcaster(polishedTransaction)
+    } catch (e: Exception) {
+        sequenceProvider.refresh(walletAddress)
+
+        throw e
     }
 
     private suspend fun <T : Message> Transaction<T>.polish(
@@ -116,8 +133,13 @@ class Terra(
                 throw IllegalArgumentException("Required to set fee or gasPrices or gasPriceProvider")
             }
 
-            val providedFee = gasAmount?.let { Fee(it.toString(), providedGasPrices) }
-                ?: estimateFee(this, providedGasPrices, gasAdjustment)
+
+            val providedFee = gasAmount?.let { gas ->
+                val feeAmount = providedGasPrices.map {
+                    it.copy(amount = ceil(it.amount.toDouble() * gas).toLong().toString())
+                }
+                Fee(gas.toString(), feeAmount)
+            } ?: estimateFee(this, providedGasPrices, gasAdjustment)
 
             return copy(fee = providedFee).sign()
         }
