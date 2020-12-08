@@ -9,6 +9,7 @@ import money.terra.model.Coin
 import money.terra.model.Fee
 import money.terra.model.Transaction
 import money.terra.model.TransactionQueryResult
+import money.terra.model.transaction.BroadcastTransactionResult
 import money.terra.transaction.message.Message
 import money.terra.util.provider.*
 import money.terra.wallet.ConnectedTerraWallet
@@ -95,7 +96,7 @@ class Terra(
         }
     }
 
-    private suspend fun <T : Message, R> broadcast(
+    private suspend fun <T : Message, R : BroadcastTransactionResult> broadcast(
         transaction: Transaction<T>,
         gasAmount: Long?,
         gasPrices: List<Coin>?,
@@ -109,14 +110,20 @@ class Terra(
         broadcast(transaction, gasAmount, gasPrices, broadcaster)
     }
 
-    private suspend fun <T : Message, R> broadcast(
+    private suspend fun <T : Message, R : BroadcastTransactionResult> broadcast(
         transaction: Transaction<T>,
         gasAmount: Long?,
         gasPrices: List<Coin>?,
         broadcaster: suspend (Transaction<*>) -> R
     ) = try {
         val polishedTransaction = transaction.polish(gasAmount, gasPrices)
-        polishedTransaction to broadcaster(polishedTransaction)
+        val broadcastResult = broadcaster(polishedTransaction)
+
+        if (broadcastResult.code != null || broadcastResult.code != 0) {
+            sequenceProvider.refresh(walletAddress)
+        }
+
+        polishedTransaction to broadcastResult
     } catch (e: Exception) {
         sequenceProvider.refresh(walletAddress)
 
