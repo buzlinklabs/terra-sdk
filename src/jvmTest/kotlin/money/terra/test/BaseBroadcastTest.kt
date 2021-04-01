@@ -20,7 +20,7 @@ abstract class BaseBroadcastTest(private val terra: Terra) {
     @Test
     @DisplayName("broadcast")
     fun testBroadcastSync() {
-        val result = runBlocking { terra.broadcastSync(gasPrices = listOf(Coin("uluna", "50"))) { setup() } }
+        val result = runBlocking { terra.broadcastSync { setup() }.second }
 
         result.validate()
 

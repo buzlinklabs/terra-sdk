@@ -2,9 +2,11 @@ package money.terra.test
 
 import kotlinx.coroutines.runBlocking
 import money.terra.Terra
+import money.terra.client.fcd.TerraFcdClient
 import money.terra.model.Coin
 import money.terra.transaction.TransactionBuilder
 import money.terra.transaction.message.SendMessage
+import money.terra.util.provider.FcdGasPriceProvider
 import money.terra.wallet.TerraWallet
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
@@ -21,6 +23,11 @@ class TerraTest {
         @JvmStatic
         fun init() {
             terra = runBlocking { Terra.connect(TerraWallet.from(MNEMONIC), HTTP_CLIENT) }
+            terra.gasPriceProvider = FcdGasPriceProvider(TerraFcdClient(NETWORK, "https://tequila-fcd.terra.dev")).apply {
+                filterGasPrices = {
+                    filter { it.denom == "uluna" }
+                }
+            }
         }
     }
 
@@ -36,10 +43,10 @@ class TerraTest {
     @DisplayName("코인 송금")
     inner class SendCoinTest : BaseBroadcastTest(terra) {
 
-        val coins = listOf(Coin("uluna", "100000"))
+        val coins = listOf(Coin("uluna", "1"))
 
         override fun TransactionBuilder.setup() {
-            with { SendMessage(terra.wallet.address, TEST_ADDRESS, coins) }
+            with { SendMessage(terra.wallet.address, terra.wallet.address, coins) }
         }
     }
 }

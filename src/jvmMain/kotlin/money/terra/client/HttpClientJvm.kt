@@ -2,10 +2,9 @@
 
 package money.terra.client
 
-import io.ktor.client.engine.HttpClientEngineConfig
-import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonSerializer
+import io.ktor.client.engine.*
+import io.ktor.client.engine.okhttp.*
+import io.ktor.client.features.json.*
 import money.terra.util.jsonMapper
 
 internal actual val ENGINE_FACTORY: EngineFactory<HttpClientEngineConfig> = EngineFactory(OkHttp) {

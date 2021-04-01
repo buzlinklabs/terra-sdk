@@ -1,6 +1,7 @@
 package money.terra.bip
 
 import org.web3j.crypto.Bip32ECKeyPair
+import org.web3j.crypto.Sign
 
 actual object Bip32 {
 
@@ -16,9 +17,9 @@ actual object Bip32 {
     actual fun sign(messageHash: ByteArray, privateKey: ByteArray): ByteArray {
         val keyPair = Bip32ECKeyPair.create(privateKey)
 
-        val signature = keyPair.sign(messageHash)
-        val r = signature.r.toByteArray()
-        val s = signature.s.toByteArray()
+        val signature = Sign.signMessage(messageHash, keyPair, false)
+        val r = signature.r
+        val s = signature.s
 
         var index = 0
         val start = if (r.size > 32) r.size - 32 else 0

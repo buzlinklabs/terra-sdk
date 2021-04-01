@@ -1,19 +1,23 @@
 package money.terra.util.provider
 
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import money.terra.client.TerraClient
 
 interface SequenceProvider {
 
-    suspend fun next(address: String): Long
+    suspend fun current(address: String): Long
+
+    suspend fun increase(address: String)
 
     suspend fun refresh(address: String)
 }
 
 open class AlwaysFetchSequenceProvider(private val client: TerraClient) : SequenceProvider {
 
-    override suspend fun next(address: String): Long = client.getSequence(address)
+    override suspend fun current(address: String): Long = client.getSequence(address)
+
+    override suspend fun increase(address: String) {
+        //do nothing
+    }
 
     override suspend fun refresh(address: String) {
         //do nothing
@@ -22,30 +26,27 @@ open class AlwaysFetchSequenceProvider(private val client: TerraClient) : Sequen
 
 abstract class CachedSequenceProvider(private val client: TerraClient) : SequenceProvider {
 
-    private val semaphore = Semaphore(1)
-
     protected abstract suspend fun set(address: String, sequence: Long)
 
     protected abstract suspend fun get(address: String): Long?
 
-    protected abstract suspend fun remove(address: String)
+    protected abstract suspend fun refreshAll()
 
-    protected abstract suspend fun removeAll()
+    override suspend fun current(address: String): Long {
+        var currentSequence = get(address)
 
-    override suspend fun next(address: String): Long = semaphore.withPermit {
-        val lastSequence = get(address)
-        val currentSequence = lastSequence?.plus(1) ?: client.getSequence(address)
-
-        set(address, currentSequence)
+        if (currentSequence == null) {
+            currentSequence = client.getSequence(address)
+            set(address, currentSequence)
+        }
 
         return currentSequence
     }
 
-    override suspend fun refresh(address: String) {
-        semaphore.withPermit { remove(address) }
+    override suspend fun increase(address: String) {
+        get(address)
+            ?.let { set(address, it.plus(1)) }
     }
-
-    suspend fun clear() = removeAll()
 }
 
 open class LocalCachedSequenceProvider(client: TerraClient) : CachedSequenceProvider(client) {
@@ -58,11 +59,11 @@ open class LocalCachedSequenceProvider(client: TerraClient) : CachedSequenceProv
 
     override suspend fun get(address: String): Long? = sequenceMap[address]
 
-    override suspend fun remove(address: String) {
+    override suspend fun refresh(address: String) {
         sequenceMap.remove(address)
     }
 
-    override suspend fun removeAll() {
+    override suspend fun refreshAll() {
         sequenceMap.clear()
     }
 }

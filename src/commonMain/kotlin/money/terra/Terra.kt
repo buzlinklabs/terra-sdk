@@ -30,6 +30,8 @@ class Terra(
         suspend fun connect(wallet: TerraWallet, client: TerraClient): Terra {
             return Terra(client.connect(wallet))
         }
+
+        var printLog: ((String) -> Unit)? = null
     }
 
     val client = wallet.client
@@ -46,22 +48,25 @@ class Terra(
         transaction: Transaction<T>,
         gasAmount: Long? = null,
         gasPrices: List<Coin>? = null,
+        sequence: Long? = null,
         withLock: Boolean = true
-    ) = broadcast(transaction, gasAmount, gasPrices, withLock, client::broadcastSync)
+    ) = broadcast(transaction, gasAmount, gasPrices, sequence, withLock, client::broadcastSync)
 
     suspend fun <T : Message> broadcastAsync(
         transaction: Transaction<T>,
         gasAmount: Long? = null,
         gasPrices: List<Coin>? = null,
+        sequence: Long? = null,
         withLock: Boolean = true
-    ) = broadcast(transaction, gasAmount, gasPrices, withLock, client::broadcastAsync)
+    ) = broadcast(transaction, gasAmount, gasPrices, sequence, withLock, client::broadcastAsync)
 
     suspend fun <T : Message> broadcastBlock(
         transaction: Transaction<T>,
         gasAmount: Long? = null,
         gasPrices: List<Coin>? = null,
+        sequence: Long? = null,
         withLock: Boolean = true
-    ) = broadcast(transaction, gasAmount, gasPrices, withLock, client::broadcastBlock)
+    ) = broadcast(transaction, gasAmount, gasPrices, sequence, withLock, client::broadcastBlock)
 
     suspend fun estimateFee(
         transaction: Transaction<*>,
@@ -77,21 +82,24 @@ class Terra(
         transactionHash: String,
         intervalMillis: Int = 1000,
         initialDelayMillis: Int = 5000,
-        maxCheckCount: Int = 5
+        maxCheckCount: Int? = 5,
     ): TransactionQueryResult {
-        delay(initialDelayMillis.toLong())
         val intervalDelay = intervalMillis.toLong()
-        var tryCount = 0
+        var checkCount = 0
         while (true) {
             try {
-                tryCount += 1
+                checkCount += 1
                 return client.getByHash(transactionHash)
             } catch (e: ClientRequestException) {
-                if (tryCount >= maxCheckCount) {
+                if (maxCheckCount != null && checkCount >= maxCheckCount) {
                     throw IllegalStateException("Reach maximum check count", e)
                 }
 
-                delay(intervalDelay)
+                if (checkCount == 1) {
+                    delay(initialDelayMillis.toLong())
+                } else {
+                    delay(intervalDelay)
+                }
             }
         }
     }
@@ -100,46 +108,60 @@ class Terra(
         transaction: Transaction<T>,
         gasAmount: Long?,
         gasPrices: List<Coin>?,
+        sequence: Long?,
         withLock: Boolean,
         broadcaster: suspend (Transaction<*>) -> R
     ) = if (withLock) {
         semaphoreProvider.use(walletAddress) {
-            broadcast(transaction, gasAmount, gasPrices, broadcaster)
+            broadcast(transaction, gasAmount, gasPrices, sequence, broadcaster)
         }
     } else {
-        broadcast(transaction, gasAmount, gasPrices, broadcaster)
+        broadcast(transaction, gasAmount, gasPrices, sequence, broadcaster)
     }
 
     private suspend fun <T : Message, R : BroadcastTransactionResult> broadcast(
         transaction: Transaction<T>,
         gasAmount: Long?,
         gasPrices: List<Coin>?,
+        sequence: Long?,
         broadcaster: suspend (Transaction<*>) -> R
-    ) = try {
-        val polishedTransaction = transaction.polish(gasAmount, gasPrices)
-        val broadcastResult = broadcaster(polishedTransaction)
-
-        if (broadcastResult.code != null || broadcastResult.code != 0) {
-            sequenceProvider.refresh(walletAddress)
+    ): Pair<Transaction<T>, R> {
+        if (transaction.isSigned) {
+            return transaction to broadcaster(transaction)
         }
 
-        polishedTransaction to broadcastResult
-    } catch (e: Exception) {
-        sequenceProvider.refresh(walletAddress)
+        try {
+            val seq = sequence ?: sequenceProvider.current(walletAddress)
+            val signedTransaction = transaction.sign(gasAmount, gasPrices, seq)
+            val broadcastResult = broadcaster(signedTransaction)
 
-        throw e
+            if (sequence == null) {
+                when(broadcastResult.code) {
+                    null, 0 -> sequenceProvider.increase(walletAddress)
+                    4 -> sequenceProvider.refresh(walletAddress)
+                }
+            }
+
+            return signedTransaction to broadcastResult
+        } catch (e: Exception) {
+            if (sequence == null) {
+                sequenceProvider.refresh(walletAddress)
+            }
+
+            throw e
+        }
     }
 
-    private suspend fun <T : Message> Transaction<T>.polish(
+    private suspend fun <T : Message> Transaction<T>.sign(
         gasAmount: Long?,
-        gasPrices: List<Coin>?
+        gasPrices: List<Coin>?,
+        sequence: Long
     ): Transaction<T> {
         if (fee == null) {
             val providedGasPrices = gasPrices ?: gasPriceProvider?.get(this)
             if (providedGasPrices.isNullOrEmpty()) {
                 throw IllegalArgumentException("Required to set fee or gasPrices or gasPriceProvider")
             }
-
 
             val providedFee = gasAmount?.let { gas ->
                 val feeAmount = providedGasPrices.map {
@@ -148,11 +170,14 @@ class Terra(
                 Fee(gas.toString(), feeAmount)
             } ?: estimateFee(this, providedGasPrices, gasAdjustment)
 
-            return copy(fee = providedFee).sign()
+            return copy(fee = providedFee).sign(sequence)
         }
 
-        return if (isSigned) this else sign()
+        return sign(sequence)
     }
 
-    private suspend fun <T : Message> Transaction<T>.sign() = wallet.sign(this, sequenceProvider.next(walletAddress))
+    private fun <T : Message> Transaction<T>.sign(sequence: Long) : Transaction<T> {
+        printLog?.invoke("Sign Transaction (wallet=${walletAddress}, sequence=$sequence)")
+        return wallet.sign(this, sequence)
+    }
 }

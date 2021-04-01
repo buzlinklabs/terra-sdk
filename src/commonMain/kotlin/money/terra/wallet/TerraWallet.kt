@@ -9,22 +9,21 @@ import money.terra.bip.Bech32
 import money.terra.bip.Bip32
 import money.terra.bip.Mnemonic
 import money.terra.client.TerraClient
-import money.terra.client.lcd.TerraLcdClient
 import money.terra.hash.RIPEMD160
 
 interface TerraWallet : PublicTerraWallet {
 
     companion object {
 
-        internal const val ACCOUNT_PREFIX = "terra"
-        internal const val ACCOUNT_PUBLIC_KEY_PREFIX = "terrapub"
-        internal const val VALIDATOR_PREFIX = "terravaloper"
-        internal const val VALIDATOR_PUBLIC_KEY_PREFIX = "terravaloperpub"
+        const val ACCOUNT_PREFIX = "terra"
+        const val ACCOUNT_PUBLIC_KEY_PREFIX = "terrapub"
+        const val VALIDATOR_PREFIX = "terravaloper"
+        const val VALIDATOR_PUBLIC_KEY_PREFIX = "terravaloperpub"
+
+        const val COIN_TYPE = 330
+        const val OLD_COIN_TYPE = 118
+
         internal val BECH32_PUBLIC_KEY_DATA_PREFIX = "eb5ae98721".bytes
-
-        internal const val COIN_TYPE = 330
-        internal const val OLD_COIN_TYPE = 118
-
         internal val Int.hard
             get() = this or -0x80000000
 
@@ -40,6 +39,20 @@ interface TerraWallet : PublicTerraWallet {
             val keyPair = Bip32.keyPairFrom(seed, hdPathLuna)
 
             return TerraWalletImpl(keyPair.publicKey, keyPair.privateKey)
+        }
+
+        fun isValidAccountAddress(address: String): Boolean {
+            if (!address.startsWith(ACCOUNT_PREFIX)) {
+                return false
+            }
+
+            try {
+                Bech32.decode(address)
+            } catch (e: Exception) {
+                return false
+            }
+
+            return true
         }
     }
 
@@ -87,7 +100,15 @@ open class TerraWalletImpl(
 }
 
 @Suppress("FunctionName")
-fun TerraWallet(publicKey: String, privateKey: String) = TerraWalletImpl(HEX.decode(publicKey), HEX.decode(privateKey))
+fun TerraWallet(publicKey: String, privateKey: String): TerraWallet {
+    val publicKeyBytes = ByteArray(33)
+    val privateKeyBytes = ByteArray(33)
+
+    HEX.decode(publicKey).copyInto(publicKeyBytes)
+    HEX.decode(privateKey).copyInto(privateKeyBytes)
+
+    return TerraWalletImpl(publicKeyBytes, privateKeyBytes)
+}
 
 @Suppress("FunctionName")
 fun TerraWallet(publicKey: ByteArray, privateKey: ByteArray) = TerraWalletImpl(publicKey, privateKey)

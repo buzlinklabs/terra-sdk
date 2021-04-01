@@ -2,14 +2,14 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Date
 
 plugins {
-    kotlin("multiplatform") version "1.4.10"
-    `maven-publish`
+    kotlin("multiplatform") version "1.4.32"
+    id("maven-publish")
     id("com.jfrog.bintray") version "1.8.4"
 }
 
 val artifactName = "terra-sdk"
 val artifactGroup = "money.terra"
-val artifactVersion = "0.3.2"
+val artifactVersion = "0.3.8"
 group = artifactGroup
 version = artifactVersion
 
@@ -39,7 +39,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib-common"))
 
-                implementation("kr.jadekim:common-util-common:1.1.7")
+                implementation("kr.jadekim:common-util-common:1.1.8")
 
                 implementation("io.ktor:ktor-client-core:$ktorClientVersion")
                 implementation("io.ktor:ktor-client-json:$ktorClientVersion")
@@ -56,14 +56,13 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib-jdk8"))
 
-                implementation("kr.jadekim:common-util:1.1.7")
+                implementation("kr.jadekim:common-util:1.1.8")
 
-                implementation("org.web3j:crypto:4.5.17")
+                implementation("org.web3j:crypto:5.0.0")
 
                 implementation("io.ktor:ktor-client-okhttp:$ktorClientVersion")
                 implementation("io.ktor:ktor-client-json-jvm:$ktorClientVersion")
                 implementation("io.ktor:ktor-client-jackson:$ktorClientVersion")
-                implementation("io.ktor:ktor-client-logging-jvm:$ktorClientVersion")
 
                 implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.3")
             }
