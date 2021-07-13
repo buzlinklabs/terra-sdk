@@ -1,15 +1,13 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.util.Date
 
 plugins {
     kotlin("multiplatform") version "1.4.32"
     id("maven-publish")
-    id("com.jfrog.bintray") version "1.8.4"
 }
 
 val artifactName = "terra-sdk"
 val artifactGroup = "money.terra"
-val artifactVersion = "0.3.8"
+val artifactVersion = "0.3.10"
 group = artifactGroup
 version = artifactVersion
 
@@ -86,24 +84,14 @@ kotlin {
     }
 }
 
-bintray {
-    user = System.getenv("BINTRAY_USER")
-    key = System.getenv("BINTRAY_KEY")
+publishing {
+    repositories {
+        maven {
+            setUrl("s3://maven.repository.buzlink.org/releases")
 
-    publish = true
-
-    setPublications("jvm", "metadata")
-
-    pkg.apply {
-        userOrg = "terra-money"
-        repo = "maven"
-        name = "terra-sdk"
-        setLicenses("Apache2.0")
-        setLabels("kotlin")
-        vcsUrl = "https://github.com/buzlinklabs/terra-sdk.git"
-        version.apply {
-            name = artifactVersion
-            released = Date().toString()
+            authentication {
+                create<AwsImAuthentication>("awsIm")
+            }
         }
     }
 }

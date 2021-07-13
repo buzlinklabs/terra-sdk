@@ -101,17 +101,19 @@ open class TerraWalletImpl(
 
 @Suppress("FunctionName")
 fun TerraWallet(publicKey: String, privateKey: String): TerraWallet {
-    val publicKeyBytes = ByteArray(33)
-    val privateKeyBytes = ByteArray(33)
-
-    HEX.decode(publicKey).copyInto(publicKeyBytes)
-    HEX.decode(privateKey).copyInto(privateKeyBytes)
-
-    return TerraWalletImpl(publicKeyBytes, privateKeyBytes)
+    return TerraWallet(HEX.decode(publicKey), HEX.decode(privateKey))
 }
 
 @Suppress("FunctionName")
-fun TerraWallet(publicKey: ByteArray, privateKey: ByteArray) = TerraWalletImpl(publicKey, privateKey)
+fun TerraWallet(publicKey: ByteArray, privateKey: ByteArray): TerraWallet {
+    val publicKeyBytes = ByteArray(33)
+    val privateKeyBytes = ByteArray(33)
+
+    publicKey.copyInto(publicKeyBytes)
+    privateKey.copyInto(privateKeyBytes)
+
+    return TerraWalletImpl(publicKeyBytes, privateKeyBytes)
+}
 
 suspend fun TerraWallet.connect(client: TerraClient) =
     ConnectedTerraWallet(this, client.getAccountNumber(address), client)
