@@ -13,8 +13,7 @@ version = artifactVersion
 
 repositories {
     mavenCentral()
-    jcenter()
-    maven("https://dl.bintray.com/jdekim43/maven")
+    maven("https://jadekim.jfrog.io/artifactory/maven/")
 }
 
 kotlin {
@@ -26,7 +25,7 @@ kotlin {
     jvm {
         withJava()
         mavenPublication {
-            artifactId = artifactName
+            artifactId = "$artifactName-jvm"
         }
     }
 
@@ -82,15 +81,19 @@ kotlin {
             }
         }
     }
-}
 
-publishing {
-    repositories {
-        maven {
-            setUrl("s3://maven.repository.buzlink.org/releases")
+    publishing {
+        repositories {
+            maven {
+                val jfrogUsername: String by project
+                val jfrogPassword: String by project
 
-            authentication {
-                create<AwsImAuthentication>("awsIm")
+                setUrl("https://jadekim.jfrog.io/artifactory/maven/")
+
+                credentials {
+                    username = jfrogUsername
+                    password = jfrogPassword
+                }
             }
         }
     }

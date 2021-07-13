@@ -1,6 +1,4 @@
 # Terra Kotlin SDK
-[![Download](https://api.bintray.com/packages/terra-money/maven/terra-sdk/images/download.svg)](https://bintray.com/terra-money/maven/terra-sdk/_latestVersion)
-
 ## Support Platform
 * JVM
 
@@ -8,14 +6,11 @@
 ### JVM
 ```
 repositories {
-    jcenter()
-
-    // If can't find
-    maven("https://dl.bintray.com/terra-money/maven")
+    maven("https://jadekim.jfrog.io/artifactory/maven")
 }
 
 dependencies {
-    implementation("money.terra:terra-sdk:$terraSdkVersion")
+    implementation("money.terra:terra-sdk-jvm:$terraSdkVersion")
 }
 ```
 
