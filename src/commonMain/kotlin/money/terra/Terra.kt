@@ -15,6 +15,8 @@ import money.terra.util.provider.*
 import money.terra.wallet.ConnectedTerraWallet
 import money.terra.wallet.TerraWallet
 import money.terra.wallet.connect
+import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmStatic
 import kotlin.math.ceil
 
 class Terra(
@@ -23,10 +25,12 @@ class Terra(
 
     companion object {
 
+        @JvmStatic
         suspend fun connect(wallet: TerraWallet, chainId: String, lcdUrl: String): Terra {
             return Terra(wallet.connect(TerraLcdClient(Network(chainId), lcdUrl)))
         }
 
+        @JvmStatic
         suspend fun connect(wallet: TerraWallet, client: TerraClient): Terra {
             return Terra(client.connect(wallet))
         }
@@ -44,6 +48,7 @@ class Terra(
 
     private val walletAddress = wallet.address
 
+    @JvmOverloads
     suspend fun <T : Message> broadcastSync(
         transaction: Transaction<T>,
         gasAmount: Long? = null,
@@ -52,6 +57,7 @@ class Terra(
         withLock: Boolean = true
     ) = broadcast(transaction, gasAmount, gasPrices, sequence, withLock, client::broadcastSync)
 
+    @JvmOverloads
     suspend fun <T : Message> broadcastAsync(
         transaction: Transaction<T>,
         gasAmount: Long? = null,
@@ -60,6 +66,7 @@ class Terra(
         withLock: Boolean = true
     ) = broadcast(transaction, gasAmount, gasPrices, sequence, withLock, client::broadcastAsync)
 
+    @JvmOverloads
     suspend fun <T : Message> broadcastBlock(
         transaction: Transaction<T>,
         gasAmount: Long? = null,
@@ -68,6 +75,7 @@ class Terra(
         withLock: Boolean = true
     ) = broadcast(transaction, gasAmount, gasPrices, sequence, withLock, client::broadcastBlock)
 
+    @JvmOverloads
     suspend fun estimateFee(
         transaction: Transaction<*>,
         gasPrices: List<Coin>,
@@ -78,6 +86,7 @@ class Terra(
         return client.getByHash(transactionHash)
     }
 
+    @JvmOverloads
     suspend fun wait(
         transactionHash: String,
         intervalMillis: Int = 1000,

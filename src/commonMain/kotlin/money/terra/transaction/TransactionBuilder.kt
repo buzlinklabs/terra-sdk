@@ -1,3 +1,5 @@
+@file:JvmName("TransactionUtils")
+
 package money.terra.transaction
 
 import money.terra.Terra
@@ -5,6 +7,8 @@ import money.terra.model.Coin
 import money.terra.model.Fee
 import money.terra.model.Transaction
 import money.terra.transaction.message.Message
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
 
 class TransactionBuilder {
 
@@ -21,6 +25,7 @@ class TransactionBuilder {
     fun Message.addThis() = with(this)
 }
 
+@JvmOverloads
 suspend inline fun Terra.broadcastSync(
     gasAmount: Long? = null,
     gasPrices: List<Coin>? = null,
@@ -29,6 +34,7 @@ suspend inline fun Terra.broadcastSync(
     .apply { block() }
     .let { broadcastSync(it.build(), gasAmount, gasPrices) }
 
+@JvmOverloads
 suspend inline fun Terra.broadcastAsync(
     gasAmount: Long? = null,
     gasPrices: List<Coin>? = null,
@@ -37,6 +43,7 @@ suspend inline fun Terra.broadcastAsync(
     .apply { block() }
     .let { broadcastAsync(it.build(), gasAmount, gasPrices) }
 
+@JvmOverloads
 suspend inline fun Terra.broadcastBlock(
     gasAmount: Long? = null,
     gasPrices: List<Coin>? = null,

@@ -3,6 +3,7 @@ package money.terra.wallet
 import money.terra.client.TerraClient
 import money.terra.model.Transaction
 import money.terra.signer.MessageSigner
+import money.terra.signer.SignMessage
 import money.terra.transaction.message.Message
 
 class ConnectedTerraWallet(
@@ -19,4 +20,8 @@ class ConnectedTerraWallet(
     fun <T : Message> sign(transaction: Transaction<T>, sequence: Long): Transaction<T> {
         return signer.sign(transaction, sequence.toString())
     }
+
+    fun getSignature(message: SignMessage<*>) = signer.getSignature(message)
+
+    fun getSignature(message: String) = signer.getSignature(message)
 }

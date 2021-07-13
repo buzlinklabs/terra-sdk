@@ -28,11 +28,17 @@ class MessageSigner(
             transaction.memo
         )
 
-        val json = signMessage.toSortedJson()
-        val signMessageHash = SHA_256.hash(json)
-        val signature = Bip32.sign(signMessageHash, wallet.privateKey)
-        val signatureObject = Signature(signature, wallet.publicKey)
+        val signature = getSignature(signMessage)
 
-        return transaction.copy(signatures = listOf(signatureObject))
+        return transaction.copy(signatures = listOf(signature))
+    }
+
+    fun getSignature(message: SignMessage<*>): Signature = getSignature(message.toSortedJson())
+
+    fun getSignature(message: String): Signature {
+        val signMessageHash = SHA_256.hash(message)
+        val signature = Bip32.sign(signMessageHash, wallet.privateKey)
+
+        return Signature(signature, wallet.publicKey)
     }
 }

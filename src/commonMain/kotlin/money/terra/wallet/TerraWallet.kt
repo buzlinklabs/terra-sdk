@@ -10,15 +10,18 @@ import money.terra.bip.Bip32
 import money.terra.bip.Mnemonic
 import money.terra.client.TerraClient
 import money.terra.hash.RIPEMD160
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmStatic
 
 interface TerraWallet : PublicTerraWallet {
 
     companion object {
 
-        const val ACCOUNT_PREFIX = "terra"
-        const val ACCOUNT_PUBLIC_KEY_PREFIX = "terrapub"
-        const val VALIDATOR_PREFIX = "terravaloper"
-        const val VALIDATOR_PUBLIC_KEY_PREFIX = "terravaloperpub"
+        const val ACCOUNT_HRP = "terra"
+        const val ACCOUNT_PUBLIC_KEY_HRP = "terrapub"
+        const val VALIDATOR_HRP = "terravaloper"
+        const val VALIDATOR_PUBLIC_KEY_HRP = "terravaloperpub"
 
         const val COIN_TYPE = 330
         const val OLD_COIN_TYPE = 118
@@ -27,12 +30,16 @@ interface TerraWallet : PublicTerraWallet {
         internal val Int.hard
             get() = this or -0x80000000
 
+        @JvmStatic
+        @JvmOverloads
         fun create(account: Int = 0, index: Int = 0): Pair<TerraWallet, String> {
             val mnemonic = Mnemonic.generate()
 
             return from(mnemonic, account, index) to mnemonic
         }
 
+        @JvmStatic
+        @JvmOverloads
         fun from(mnemonic: String, account: Int = 0, index: Int = 0, coinType: Int = COIN_TYPE): TerraWallet {
             val seed = Mnemonic.seedFrom(mnemonic)
             val hdPathLuna = intArrayOf(44.hard, coinType.hard, account.hard, 0, index)
@@ -41,18 +48,14 @@ interface TerraWallet : PublicTerraWallet {
             return TerraWalletImpl(keyPair.publicKey, keyPair.privateKey)
         }
 
+        @JvmStatic
         fun isValidAccountAddress(address: String): Boolean {
-            if (!address.startsWith(ACCOUNT_PREFIX)) {
-                return false
-            }
-
-            try {
-                Bech32.decode(address)
+            return try {
+                val (hrp, _) = Bech32.decode(address)
+                hrp == ACCOUNT_HRP
             } catch (e: Exception) {
-                return false
+                false
             }
-
-            return true
         }
     }
 
@@ -77,17 +80,17 @@ open class TerraWalletImpl(
     override val publicKeyHex: String by lazy { publicKey.asHexString }
 
     override val address: String by lazy { accountAddress } // accountAddress alias
-    override val accountAddress: String by lazy { Bech32.encode(TerraWallet.ACCOUNT_PREFIX, baseAddress) }
+    override val accountAddress: String by lazy { Bech32.encode(TerraWallet.ACCOUNT_HRP, baseAddress) }
     override val accountPublicKey: String by lazy {
         Bech32.encode(
-            TerraWallet.ACCOUNT_PUBLIC_KEY_PREFIX,
+            TerraWallet.ACCOUNT_PUBLIC_KEY_HRP,
             TerraWallet.BECH32_PUBLIC_KEY_DATA_PREFIX + publicKey.asHex
         )
     }
-    override val validatorAddress: String by lazy { Bech32.encode(TerraWallet.VALIDATOR_PREFIX, baseAddress) }
+    override val validatorAddress: String by lazy { Bech32.encode(TerraWallet.VALIDATOR_HRP, baseAddress) }
     override val validatorPublicKey: String by lazy {
         Bech32.encode(
-            TerraWallet.VALIDATOR_PUBLIC_KEY_PREFIX,
+            TerraWallet.VALIDATOR_PUBLIC_KEY_HRP,
             TerraWallet.BECH32_PUBLIC_KEY_DATA_PREFIX + publicKey.asHex
         )
     }
