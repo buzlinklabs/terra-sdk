@@ -1,4 +1,6 @@
 # Terra Kotlin SDK
+<b>Deprecated this repository. Use https://github.com/jdekim43/terra-kotlin-sdk</b>
+
 ## Support Platform
 * JVM
 
